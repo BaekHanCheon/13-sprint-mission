@@ -1,14 +1,19 @@
-package com.sprint.mission.discodeit.service.jcf;
+package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.repository.jcf.JCFUserRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.UUID;
 
-public class JCFUserService implements UserService {
+public class BasicUserService implements UserService {
+    private final UserRepository repository;
 
-    JCFUserRepository repository = new JCFUserRepository();
+    // 생성자로 Repository를 받아와서 저장(의존성 주입)
+    public BasicUserService(UserRepository repository) {
+        this.repository = repository;
+    }
 
     @Override
     public void createUser(User user) {

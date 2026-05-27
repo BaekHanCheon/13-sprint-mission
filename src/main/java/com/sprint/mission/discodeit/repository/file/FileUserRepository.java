@@ -1,0 +1,74 @@
+package com.sprint.mission.discodeit.repository.file;
+
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.UserRepository;
+
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
+public class FileUserRepository implements UserRepository {
+    private final Path binaryPath = Path.of("data/Users.ser");
+
+    private void save(Map<UUID, User> storage) {
+        Path parent = binaryPath.getParent();
+        if (parent != null) {
+            try { Files.createDirectories(parent); }
+            catch (IOException e) { throw new RuntimeException(e); }
+        }
+        try (ObjectOutputStream oos = new ObjectOutputStream(
+                new BufferedOutputStream(Files.newOutputStream(binaryPath)))) {
+            oos.writeObject(new HashMap<>(storage));
+        } catch (IOException e) { throw new RuntimeException(e); }
+    }
+
+    private Map<UUID, User> load() {
+        if (!Files.exists(binaryPath)) return new HashMap<>();
+        try (ObjectInputStream ois = new ObjectInputStream(
+                new BufferedInputStream(Files.newInputStream(binaryPath)))) {
+            return (Map<UUID, User>) ois.readObject();
+        } catch (IOException | ClassNotFoundException e) { throw new RuntimeException(e); }
+    }
+
+    public boolean isExistEmail(User user) {
+        return load().values().stream().anyMatch(u -> u.getEmail().equals(user.getEmail()));
+    }
+
+    public boolean isExistPhoneNumber(User user) {
+        return load().values().stream().anyMatch(u -> u.getPhoneNumber().equals(user.getPhoneNumber()));
+    }
+
+    @Override
+    public void createUser(User user) {
+        Map<UUID, User> data = load();
+        data.put(user.getId(), user);
+        save(data);
+    }
+
+    @Override
+    public User readUser(UUID id) {
+        return load().get(id);
+    }
+
+    @Override
+    public void readAllUser() {
+        load().values().forEach(System.out::println);
+    }
+
+    @Override
+    public void modifyUser(User user) {
+        Map<UUID, User> data = load();
+        data.put(user.getId(), user);
+        save(data);
+    }
+
+    @Override
+    public void deleteUser(UUID id) {
+        Map<UUID, User> data = load();
+        data.remove(id);
+        save(data);
+    }
+}

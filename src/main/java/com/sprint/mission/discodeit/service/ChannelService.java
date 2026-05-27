@@ -12,4 +12,5 @@ public interface ChannelService {
     void modifyChannel(UUID id, String property, String value);
     void deleteChannel(UUID id);
 
+    void addAllowedUserList(UUID id, UUID id1);
 }

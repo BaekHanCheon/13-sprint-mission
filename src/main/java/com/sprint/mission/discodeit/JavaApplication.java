@@ -1,6 +1,21 @@
 package com.sprint.mission.discodeit;
 
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
+import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
+import com.sprint.mission.discodeit.repository.file.FileUserRepository;
+import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.basic.BasicChannelService;
+import com.sprint.mission.discodeit.service.basic.BasicMessageService;
+import com.sprint.mission.discodeit.service.basic.BasicUserService;
+import com.sprint.mission.discodeit.service.file.FileChannelService;
+import com.sprint.mission.discodeit.service.file.FileMessageService;
+import com.sprint.mission.discodeit.service.file.FileUserService;
 import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
@@ -8,11 +23,45 @@ import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 import java.util.UUID;
 
 public class JavaApplication {
+/*
+    static User setupUser(UserService userService) {
+        User user = userService.createUser("woody", "woody@codeit.com", "woody1234");
+        return user;
+    }
+
+    static Channel setupChannel(ChannelService channelService) {
+        Channel channel = channelService.createChannel(ChannelType.PUBLIC, "공지", "공지 채널입니다.");
+        return channel;
+    }
+
+    static void messageCreateTest(MessageService messageService, Channel channel, User author) {
+        Message message = messageService.createMessage("안녕하세요.", channel.getId(), author.getId());
+        System.out.println("메시지 생성: " + message.getId());
+    }
+*/
+
     public static void main(String[] args) {
-        //JFC 서비스 생성
-        JCFUserService userService = new JCFUserService();
-        JCFChannelService channelService = new JCFChannelService();
-        JCFMessageService messageService = new JCFMessageService();
+        MessageRepository messageRepository = new FileMessageRepository();
+        UserRepository userRepository = new FileUserRepository();
+        ChannelRepository channelRepository = new FileChannelRepository();
+
+        //Basic
+        UserService userService = new BasicUserService(userRepository);
+        MessageService messageService = new BasicMessageService(messageRepository);
+        ChannelService channelService = new BasicChannelService(channelRepository);
+
+
+        //------------------------------------------------------------------------------
+
+        //파일 서비스 생성
+        //FileUserService userService = new FileUserService();
+        //FileChannelService channelService = new FileChannelService();
+        //FileMessageService messageService = new FileMessageService();
+
+        //Jcf 서비스 생성
+        //JCFUserService userService = new JCFUserService();
+        //JCFChannelService channelService = new JCFChannelService();
+        //JCFMessageService messageService = new JCFMessageService();
 
         //유저 생성
         User user1 = new User("asdf", "닉네임","asdf@asdf.com", "010-1111-2222", UserType.GENERAL);
@@ -46,6 +95,8 @@ public class JavaApplication {
         channelService.createChannel(channel2);
         Channel channel3 = new Channel(ChannelType.MANAGER,"공지 채널","행정-공지 게시판입니다. 매니저만 메시지 생성이 가능하고, 모든 사용자가 접근 가능합니다.");
         channelService.createChannel(channel3);
+
+        channelService.readAllChannel();
 
         //일반(public) 채널메시지 생성
         Message message1 = new Message("user1가 channel1(일반)에 생성한 메세지 입니다.", user1.getId(), channel1.getId());

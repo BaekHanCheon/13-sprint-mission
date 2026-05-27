@@ -1,14 +1,19 @@
-package com.sprint.mission.discodeit.service.jcf;
+package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.*;
-import com.sprint.mission.discodeit.repository.jcf.JCFMessageRepository;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 
 import java.util.UUID;
 
-public class JCFMessageService implements MessageService {
+public class BasicMessageService implements MessageService {
+    private final MessageRepository repository;
 
-    JCFMessageRepository repository = new JCFMessageRepository();
+    // 생성자로 Repository를 받아와서 저장(의존성 주입)
+    public BasicMessageService(MessageRepository repository) {
+        this.repository = repository;
+    }
 
     public boolean isPrivateChannelContainsAuthor(Message message, Channel channel) {
         if (channel.getType() == ChannelType.PRIVATE) {
@@ -45,7 +50,7 @@ public class JCFMessageService implements MessageService {
     public void readMessage(UUID id) {
         Message message = repository.readMessage(id);
         if (message != null) {
-            System.out.println("read message : ");
+            System.out.println("메세지 조회 -");
             System.out.println(message.toString());
         } else {
             System.out.println("해당 메시지가 없습니다.");
@@ -54,7 +59,7 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public void readAllMessage() {
-        System.out.println("read AllMessages : ");
+        System.out.println("메세지 전체조회 -");
         repository.readAllMessage();
     }
 
@@ -75,6 +80,6 @@ public class JCFMessageService implements MessageService {
     @Override
     public void deleteMessage(UUID id) {
         repository.deleteMessage(id);
-        System.out.println("deleted message");
+        System.out.println("메세지 삭제됨");
     }
 }

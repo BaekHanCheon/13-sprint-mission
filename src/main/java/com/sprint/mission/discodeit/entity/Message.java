@@ -1,8 +1,9 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
 import java.util.UUID;
 
-public class Message extends Entity{
+public class Message extends Entity implements Serializable {
 
     private String content;
     private UUID channelID;

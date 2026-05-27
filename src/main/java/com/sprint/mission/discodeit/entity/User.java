@@ -1,9 +1,10 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.UUID;
 
-public class User extends Entity {
+public class User extends Entity implements Serializable {
 
     private String password;
     private String userName;
