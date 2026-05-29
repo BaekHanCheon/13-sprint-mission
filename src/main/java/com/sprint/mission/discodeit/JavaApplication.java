@@ -13,17 +13,9 @@ import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.basic.BasicChannelService;
 import com.sprint.mission.discodeit.service.basic.BasicMessageService;
 import com.sprint.mission.discodeit.service.basic.BasicUserService;
-import com.sprint.mission.discodeit.service.file.FileChannelService;
-import com.sprint.mission.discodeit.service.file.FileMessageService;
-import com.sprint.mission.discodeit.service.file.FileUserService;
-import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
-import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
-import com.sprint.mission.discodeit.service.jcf.JCFUserService;
-
-import java.util.UUID;
 
 public class JavaApplication {
-/*
+/*  탬플릿 원본
     static User setupUser(UserService userService) {
         User user = userService.createUser("woody", "woody@codeit.com", "woody1234");
         return user;
@@ -39,6 +31,25 @@ public class JavaApplication {
         System.out.println("메시지 생성: " + message.getId());
     }
 */
+    // 탬플릿 수정
+    static User setupUser(UserService userService) {
+        User user = new User("woody1234", "woody","woody@codeit.com", "010-1111-2222", UserType.GENERAL);
+        userService.createUser(user);
+        return user;
+    }
+
+    static Channel setupChannel(ChannelService channelService) {
+        Channel channel = new Channel(ChannelType.PUBLIC,"일반 채널","오늘 뭐먹지 채널입니다. 모두가 메시지 생성, 접근이 가능합니다.");
+        channelService.createChannel(channel);
+        return channel;
+    }
+
+    static Message messageCreateTest(MessageService messageService, Channel channel, User author) {
+        Message message = new Message("생성한 메세지 입니다.", author.getId(), channel.getId());
+        messageService.createMessage(message, author ,channel);
+        System.out.println("메시지 생성: " + message.getId());
+        return message;
+    }
 
     public static void main(String[] args) {
         MessageRepository messageRepository = new FileMessageRepository();
@@ -50,6 +61,10 @@ public class JavaApplication {
         MessageService messageService = new BasicMessageService(messageRepository);
         ChannelService channelService = new BasicChannelService(channelRepository);
 
+        //수정 탬플릿
+        User user1 = setupUser(userService);
+        Channel channel1 = setupChannel(channelService);
+        Message message1 = messageCreateTest(messageService, channel1 ,user1);
 
         //------------------------------------------------------------------------------
 
@@ -64,7 +79,7 @@ public class JavaApplication {
         //JCFMessageService messageService = new JCFMessageService();
 
         //유저 생성
-        User user1 = new User("asdf", "닉네임","asdf@asdf.com", "010-1111-2222", UserType.GENERAL);
+        //User user1 = new User("asdf", "닉네임","asdf@asdf.com", "010-1111-2222", UserType.GENERAL);
         User user2 = new User("asdf2", "닉네임2","asdf@asdf.com2", "010-1111-3333", UserType.MANAGER);
         User user3 = new User("asdf3", "닉네임2","asdf@asdf.com2", "010-1111-4444", UserType.GENERAL); //중복이메일 유저
         User user4 = new User("asdf4", "닉네임4","asdf@asdf.com4", "010-1111-3333", UserType.GENERAL); //중복 핸드폰번호 유저
@@ -89,8 +104,8 @@ public class JavaApplication {
         System.out.println("=================================================================");
 
         //채널 생성
-        Channel channel1 = new Channel(ChannelType.PUBLIC,"일반 채널","오늘 뭐먹지 채널입니다. 모두가 메시지 생성, 접근이 가능합니다.");
-        channelService.createChannel(channel1);
+        //Channel channel1 = new Channel(ChannelType.PUBLIC,"일반 채널","오늘 뭐먹지 채널입니다. 모두가 메시지 생성, 접근이 가능합니다.");
+        //channelService.createChannel(channel1);
         Channel channel2 = new Channel(ChannelType.PRIVATE,"팀 채널","4팀 채널입니다. 지정 사용자, 매니저만 메시지 생성, 접근 가능합니다.");
         channelService.createChannel(channel2);
         Channel channel3 = new Channel(ChannelType.MANAGER,"공지 채널","행정-공지 게시판입니다. 매니저만 메시지 생성이 가능하고, 모든 사용자가 접근 가능합니다.");
@@ -99,9 +114,9 @@ public class JavaApplication {
         channelService.readAllChannel();
 
         //일반(public) 채널메시지 생성
-        Message message1 = new Message("user1가 channel1(일반)에 생성한 메세지 입니다.", user1.getId(), channel1.getId());
-        messageService.createMessage(message1, user1 ,channel1); //생성 성공
-        messageService.readMessage(message1.getId()); //조회 성공
+        //Message message1 = new Message("user1가 channel1(일반)에 생성한 메세지 입니다.", user1.getId(), channel1.getId());
+        //messageService.createMessage(message1, user1 ,channel1); //생성 성공
+        //messageService.readMessage(message1.getId()); //조회 성공
 
         //팀(private) 채널메시지 생성
         Message message2 = new Message("user1가 channel2(팀)에 생성한 메세지 입니다.", user1.getId(), channel2.getId());
