@@ -4,13 +4,15 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
+import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
+@Service
 public class BasicUserService implements UserService {
     private final UserRepository repository;
 
-    // 생성자로 Repository를 받아와서 저장(의존성 주입)
+
     public BasicUserService(UserRepository repository) {
         this.repository = repository;
     }
