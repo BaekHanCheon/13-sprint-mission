@@ -41,17 +41,21 @@ public class FileChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public Channel readChannel(UUID id) {
-        return load().get(id);
+    public Channel findChannelById(UUID id) {
+        Channel channel = load().get(id);
+        if (channel == null) {
+            throw new IllegalArgumentException("채널을 찾을 수 없습니다.");
+        }
+        return channel;
     }
 
     @Override
-    public void readAllChannel() {
-        load().values().forEach(System.out::println);
+    public List<Channel> findAllChannel() {
+        return load().values().stream().sorted(Comparator.comparing(Channel::getCreatedAt)).toList();
     }
 
     @Override
-    public void modifyChannel(Channel channel) {
+    public void updateChannel(Channel channel) {
         Map<UUID, Channel> data = load();
         data.put(channel.getId(), channel);
         save(data);

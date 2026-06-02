@@ -93,13 +93,13 @@ public class JavaApplication {
         userService.createUser(user4);
 
         //유저 조회
-        userService.readUser(user1.getId());
-        userService.readAllUser();
+        userService.findUserById(user1.getId());
+        userService.findAllUser();
 
         //유저 정보 수정
-        userService.modifyUser(user1.getId(),"email","zxcv@naver.com");
-        userService.modifyUser(user2.getId(),"password","zxcvzxcv");
-        userService.readAllUser();
+        userService.updateUser(user1.getId(),"email","zxcv@naver.com");
+        userService.updateUser(user2.getId(),"password","zxcvzxcv");
+        userService.findAllUser();
 
         System.out.println("=================================================================");
 
@@ -111,43 +111,43 @@ public class JavaApplication {
         Channel channel3 = new Channel(ChannelType.MANAGER,"공지 채널","행정-공지 게시판입니다. 매니저만 메시지 생성이 가능하고, 모든 사용자가 접근 가능합니다.");
         channelService.createChannel(channel3);
 
-        channelService.readAllChannel();
+        channelService.findAllChannel();
 
         //일반(public) 채널메시지 생성
         //Message message1 = new Message("user1가 channel1(일반)에 생성한 메세지 입니다.", user1.getId(), channel1.getId());
         //messageService.createMessage(message1, user1 ,channel1); //생성 성공
-        //messageService.readMessage(message1.getId()); //조회 성공
+        //messageService.findMessageById(message1.getId()); //조회 성공
 
         //팀(private) 채널메시지 생성
         Message message2 = new Message("user1가 channel2(팀)에 생성한 메세지 입니다.", user1.getId(), channel2.getId());
         messageService.createMessage(message2, user1 ,channel2); //생성 실패
-        messageService.readMessage(message2.getId()); //조회 실패
+        messageService.findMessageById(message2.getId()); //조회 실패
 
         //프라이빗 채널 접근 허용목록 등록
         channelService.addAllowedUserList(channel2.getId(),user1.getId());
 
         messageService.createMessage(message2, user1 ,channel2); //생성 성공
-        messageService.readMessage(message2.getId()); //조회 성공
+        messageService.findMessageById(message2.getId()); //조회 성공
 
         //공지(manager) 채널메시지 생성
         Message message3 = new Message("user1(일반)가 channel3(매니저)에 생성한 메세지 입니다.", user1.getId(), channel3.getId());
         messageService.createMessage(message3, user1 ,channel3); //실패
-        messageService.readMessage(message3.getId()); //실패
+        messageService.findMessageById(message3.getId()); //실패
 
         Message message4 = new Message("user2(매니저)가 channel3(매니저)에 생성한 메세지 입니다.", user2.getId(), channel3.getId());
         messageService.createMessage(message4, user2 ,channel3); //성공
-        messageService.readMessage(message4.getId()); //성공
+        messageService.findMessageById(message4.getId()); //성공
 
         System.out.println("=================================================================");
 
         //메시지 수정
-        messageService.modifyMessage(message1.getId(),"content","수정된 메세지입니다.");
-        messageService.readMessage(message1.getId());
+        messageService.updateMessage(message1.getId(),"content","수정된 메세지입니다.");
+        messageService.findMessageById(message1.getId());
 
 
         //유저 삭제
         userService.deleteUser(user1.getId());
-        userService.readAllUser();
+        userService.findAllUser();
 
 
 

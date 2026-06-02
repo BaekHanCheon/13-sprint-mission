@@ -2,37 +2,34 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
-import org.springframework.stereotype.Repository;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
-@Repository
+
 public class JCFChannelRepository implements ChannelRepository {
     private final Map<UUID, Channel> channelData = new HashMap();
 
     @Override
-    public void createChannel(Channel channel) {
+    public void createChannel (Channel channel) throws RuntimeException{
         channelData.put(channel.getId(),channel);
     }
 
     @Override
-    public Channel readChannel(UUID id) {
-        channelData.get(id).toString();
-        return channelData.get(id);
+    public Channel findChannelById(UUID id) {
+        Channel channel = channelData.get(id);
+        if (channel == null) {
+            throw new IllegalArgumentException("채널을 찾을 수 없습니다.");
+        }
+        return channel;
     }
 
     @Override
-    public void readAllChannel() {
-
+    public List<Channel> findAllChannel() {
+        return channelData.values().stream().sorted(Comparator.comparing(Channel::getCreatedAt)).toList();
     }
 
     @Override
-    public void modifyChannel(Channel channel) {
+    public void updateChannel(Channel channel) {
         channelData.put(channel.getId(), channel);
     }
 

@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.*;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import org.springframework.stereotype.Service;
@@ -49,25 +48,25 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public void readMessage(UUID id) {
-        Message message = repository.readMessage(id);
+    public void findMessageById(UUID id) {
+        Message message = repository.findMessageById(id);
         if (message != null) {
             System.out.println("메세지 조회 -");
-            System.out.println(message.toString());
+            System.out.println(message);
         } else {
             System.out.println("해당 메시지가 없습니다.");
         }
     }
 
     @Override
-    public void readAllMessage() {
-        System.out.println("메세지 전체조회 -");
-        repository.readAllMessage();
+    public void findAllMessage() {
+        System.out.println("메세지 전체조회 -" + repository.findAllMessage());
+
     }
 
     @Override
-    public void modifyMessage(UUID id, String property, String value) {
-        Message message = repository.readMessage(id);
+    public void updateMessage(UUID id, String property, String value) {
+        Message message = repository.findMessageById(id);
         if (message == null) {
             System.out.println("해당 메시지가 없습니다.");
             return;
@@ -76,7 +75,7 @@ public class BasicMessageService implements MessageService {
             case "content": message.updateContent(value); System.out.println("modified content"); break;
         }
         message.updateUpdatedAt();
-        repository.modifyMessage(message);
+        repository.updateMessage(message);
     }
 
     @Override

@@ -1,14 +1,12 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
+import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import org.springframework.stereotype.Repository;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
-@Repository
+
 public class JCFUserRepository implements UserRepository {
 
     private final Map<UUID, User> userData = new HashMap<>();
@@ -19,17 +17,21 @@ public class JCFUserRepository implements UserRepository {
     }
 
     @Override
-    public User readUser(UUID id) {
-        return userData.get(id);
+    public User findUserById(UUID id) {
+        User user = userData.get(id);
+        if (user == null) {
+            throw new IllegalArgumentException("유저를 찾을 수 없습니다.");
+        }
+        return user;
     }
 
     @Override
-    public void readAllUser() {
-        userData.values().stream().toList().forEach(System.out::println);
+    public List<User> findAllUser() {
+        return userData.values().stream().sorted(Comparator.comparing(User::getCreatedAt)).toList();
     }
 
     @Override
-    public void modifyUser(User user) {
+    public void updateUser(User user) {
         userData.put(user.getId(), user);
     }
 

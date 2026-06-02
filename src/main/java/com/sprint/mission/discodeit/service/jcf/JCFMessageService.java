@@ -42,25 +42,24 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public void readMessage(UUID id) {
-        Message message = repository.readMessage(id);
+    public void findMessageById(UUID id) {
+        Message message = repository.findMessageById(id);
         if (message != null) {
             System.out.println("read message : ");
-            System.out.println(message.toString());
+            System.out.println(message);
         } else {
             System.out.println("해당 메시지가 없습니다.");
         }
     }
 
     @Override
-    public void readAllMessage() {
-        System.out.println("read AllMessages : ");
-        repository.readAllMessage();
+    public void findAllMessage() {
+        System.out.println("read AllMessages : " + repository.findAllMessage());
     }
 
     @Override
-    public void modifyMessage(UUID id, String property, String value) {
-        Message message = repository.readMessage(id);
+    public void updateMessage(UUID id, String property, String value) {
+        Message message = repository.findMessageById(id);
         if (message == null) {
             System.out.println("해당 메시지가 없습니다.");
             return;
@@ -69,7 +68,7 @@ public class JCFMessageService implements MessageService {
             case "content": message.updateContent(value); System.out.println("modified content"); break;
         }
         message.updateUpdatedAt();
-        repository.modifyMessage(message);
+        repository.updateMessage(message);
     }
 
     @Override

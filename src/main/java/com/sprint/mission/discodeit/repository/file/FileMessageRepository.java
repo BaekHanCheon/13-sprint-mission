@@ -9,9 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Repository
 public class FileMessageRepository implements MessageRepository {
@@ -45,17 +43,21 @@ public class FileMessageRepository implements MessageRepository {
     }
 
     @Override
-    public Message readMessage(UUID id) {
-        return load().get(id);
+    public Message findMessageById(UUID id) {
+        Message message = load().get(id);
+        if (message == null) {
+            throw new IllegalArgumentException("메세지를 찾을 수 없습니다.");
+        }
+        return message;
     }
 
     @Override
-    public void readAllMessage() {
-        load().values().forEach(System.out::println);
+    public List<Message> findAllMessage() {
+        return load().values().stream().sorted(Comparator.comparing(Message::getCreatedAt)).toList();
     }
 
     @Override
-    public void modifyMessage(Message message) {
+    public void updateMessage(Message message) {
         Map<UUID, Message> data = load();
         data.put(message.getId(), message);
         save(data);

@@ -6,11 +6,9 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
-@Repository
+
 public class JCFMessageRepository implements MessageRepository {
     private final Map<UUID, Message> messageData = new HashMap<>();
 
@@ -20,17 +18,21 @@ public class JCFMessageRepository implements MessageRepository {
     }
 
     @Override
-    public Message readMessage(UUID id) {
-        return messageData.get(id);
+    public Message findMessageById(UUID id) {
+        Message message = messageData.get(id);
+        if (message == null) {
+            throw new IllegalArgumentException("메시지를 찾을 수 없습니다.");
+        }
+        return message;
     }
 
     @Override
-    public void readAllMessage() {
-        System.out.println(messageData.values().toString());
+    public List<Message> findAllMessage() {
+        return messageData.values().stream().sorted(Comparator.comparing(Message::getCreatedAt)).toList();
     }
 
     @Override
-    public void modifyMessage(Message message) {
+    public void updateMessage(Message message) {
         messageData.put(message.getId(), message);
     }
 

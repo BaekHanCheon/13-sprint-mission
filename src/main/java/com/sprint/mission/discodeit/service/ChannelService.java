@@ -7,9 +7,9 @@ import java.util.UUID;
 public interface ChannelService {
 
     void createChannel(Channel channel);
-    void readChannel(UUID id);
-    void readAllChannel();
-    void modifyChannel(UUID id, String property, String value);
+    void findChannelById(UUID id);
+    void findAllChannel();
+    void updateChannel(UUID id, String property, String value);
     void deleteChannel(UUID id);
 
     void addAllowedUserList(UUID id, UUID id1);

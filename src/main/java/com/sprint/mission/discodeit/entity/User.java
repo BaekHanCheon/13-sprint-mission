@@ -12,16 +12,6 @@ public class User extends Entity implements Serializable {
     private String phoneNumber;
     private UserType userType;
 
-//    private ArrayList managedChannelList = new ArrayList();
-//
-//    public ArrayList getManagedChannelList() {
-//        return managedChannelList;
-//    }
-//
-//    public void addManagedChannelList(UUID id) {
-//        this.managedChannelList.add(id);
-//    }
-
     //생성자
     public User(String password, String userName, String email, String phoneNumber,UserType userType){
         super();
@@ -66,12 +56,14 @@ public class User extends Entity implements Serializable {
         return userName;
     }
 
-    public void setUserName(String userName) {
+    public void updateUserName(String userName) {
         this.userName = userName;
     }
+
     public String getEmail() {
         return email;
     }
+
     public void updateEmail(String email) {
         this.email = email;
     }
@@ -88,7 +80,7 @@ public class User extends Entity implements Serializable {
         return userType;
     }
 
-    public void setUserType(UserType userType) {
+    public void updateUserType(UserType userType) {
         this.userType = userType;
     }
 

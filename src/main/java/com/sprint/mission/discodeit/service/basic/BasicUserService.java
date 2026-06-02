@@ -30,8 +30,8 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public void readUser(UUID id) {
-        User user = repository.readUser(id);
+    public void findUserById(UUID id) {
+        User user = repository.findUserById(id);
         if (user != null) {
             System.out.println("유저 조회 : ");
             System.out.println(user.toString());
@@ -41,14 +41,14 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public void readAllUser() {
+    public void findAllUser() {
         System.out.println("전체 유저 조회 : ");
-        repository.readAllUser();
+        repository.findAllUser();
     }
 
     @Override
-    public void modifyUser(UUID id, String property, String value) {
-        User user = repository.readUser(id);
+    public void updateUser(UUID id, String property, String value) {
+        User user = repository.findUserById(id);
         if (user == null) {
             System.out.println("해당 유저가 없습니다.");
             return;
@@ -56,10 +56,10 @@ public class BasicUserService implements UserService {
         switch (property.toUpperCase()) {
             case "PASSWORD": user.updatePassword(value); System.out.println("비밀번호 수정"); break;
             case "EMAIL": user.updateEmail(value); System.out.println("이메일 수정"); break;
-            case "USERNAME": user.setUserName(value); System.out.println("유저이름 수정"); break;
+            case "USERNAME": user.updateUserName(value); System.out.println("유저이름 수정"); break;
         }
         user.updateUpdatedAt();
-        repository.modifyUser(user);
+        repository.updateUser(user);
     }
 
     @Override

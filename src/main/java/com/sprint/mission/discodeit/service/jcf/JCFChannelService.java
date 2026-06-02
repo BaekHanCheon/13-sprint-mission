@@ -14,12 +14,12 @@ public class JCFChannelService implements ChannelService {
     JCFChannelRepository repository = new JCFChannelRepository();
 
     public void addAllowedUserList (UUID channelId, UUID userId){ //프라이빗 채널 유저 등록
-        Channel channel = repository.readChannel(channelId);
+        Channel channel = repository.findChannelById(channelId);
         channel.addAllowedUserList(userId);
     }
 
     public void disallowChannelList (UUID channelId, UUID userId){ //프라이빗 채널 유저 삭제
-        Channel channel = repository.readChannel(channelId);
+        Channel channel = repository.findChannelById(channelId);
         channel.disallowedList(userId);
     }
 
@@ -31,22 +31,22 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public void readChannel(UUID id) {
+    public void findChannelById(UUID id) {
         System.out.println("read channel : ");
-        repository.readChannel(id);
+        repository.findChannelById(id);
         //System.out.println(channelData.get(id).toString());
     }
 
     @Override
-    public void readAllChannel() {
-        System.out.println("read AllChannels : ");
-        repository.readAllChannel();
+    public void findAllChannel() {
+        System.out.println("read AllChannels : "+repository.findAllChannel());
+
         //System.out.println(channelData.values().toString());
     }
 
     @Override
-    public void modifyChannel(UUID id, String property, String value) {
-        Channel channel = repository.readChannel(id);
+    public void updateChannel(UUID id, String property, String value) {
+        Channel channel = repository.findChannelById(id);
 
         switch (property){
             case "type" : channel.updateType(value); System.out.println("modified type");break;
@@ -54,7 +54,7 @@ public class JCFChannelService implements ChannelService {
             case "description" : channel.updateDescription(value); System.out.println("modified description");break;
         }
         channel.updateUpdatedAt();
-        repository.modifyChannel(channel);
+        repository.updateChannel(channel);
     }
 
     @Override

@@ -19,51 +19,55 @@ public class BasicChannelService implements ChannelService {
     }
 
     public void addAllowedUserList(UUID channelId, UUID userId) {
-        Channel channel = repository.readChannel(channelId);
+        Channel channel = repository.findChannelById(channelId);
         if (channel == null) {
             System.out.println("해당 채널이 없습니다.");
             return;
         }
         channel.addAllowedUserList(userId);
-        repository.modifyChannel(channel);
+        repository.updateChannel(channel);
     }
 
     public void disallowChannelList(UUID channelId, UUID userId) {
-        Channel channel = repository.readChannel(channelId);
+        Channel channel = repository.findChannelById(channelId);
         if (channel == null) {
             System.out.println("해당 채널이 없습니다.");
             return;
         }
         channel.disallowedList(userId);
-        repository.modifyChannel(channel);
+        repository.updateChannel(channel);
     }
 
     @Override
     public void createChannel(Channel channel) {
+        boolean isDuplicate = repository.findAllChannel().stream()
+                .anyMatch(c -> c.getName().equals(channel.getName()));
+        if (isDuplicate) {
+            throw new IllegalStateException("이미 존재하는 채널 이름입니다: " + channel.getName());
+        }
         repository.createChannel(channel);
         System.out.println("채널 생성됨");
     }
 
     @Override
-    public void readChannel(UUID id) {
-        Channel channel = repository.readChannel(id);
+    public void findChannelById(UUID id) {
+        Channel channel = repository.findChannelById(id);
         if (channel != null) {
             System.out.println("채널 조회 -");
-            System.out.println(channel.toString());
+            System.out.println(channel);
         } else {
             System.out.println("해당 채널이 없습니다.");
         }
     }
 
     @Override
-    public void readAllChannel() {
-        System.out.println("전체 채널 조회");
-        repository.readAllChannel();
+    public void findAllChannel() {
+        System.out.println("전체 채널 조회" + repository.findAllChannel());
     }
 
     @Override
-    public void modifyChannel(UUID id, String property, String value) {
-        Channel channel = repository.readChannel(id);
+    public void updateChannel(UUID id, String property, String value) {
+        Channel channel = repository.findChannelById(id);
         if (channel == null) {
             System.out.println("해당 채널이 없습니다.");
             return;
@@ -83,7 +87,7 @@ public class BasicChannelService implements ChannelService {
                 break;
         }
         channel.updateUpdatedAt();
-        repository.modifyChannel(channel);
+        repository.updateChannel(channel);
     }
 
     @Override
