@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import org.springframework.stereotype.Service;
@@ -10,15 +11,19 @@ import java.util.UUID;
 @Service
 public class BasicMessageService implements MessageService {
     private final MessageRepository repository;
+    private final ChannelRepository channelRepository;
+
 
     // 생성자로 Repository를 받아와서 저장(의존성 주입)
-    public BasicMessageService(MessageRepository repository) {
+    public BasicMessageService(MessageRepository repository, ChannelRepository channelRepository) {
         this.repository = repository;
+        this.channelRepository = channelRepository;
     }
 
     public boolean isPrivateChannelContainsAuthor(Message message, Channel channel) {
         if (channel.getType() == ChannelType.PRIVATE) {
-            return channel.getAllowedUserList().contains(message.getAuthorId());
+
+            return channelRepository.findChannelById(channel.getId()).getAllowedUserList().contains(message.getAuthorId());
         }
         return true;
     }

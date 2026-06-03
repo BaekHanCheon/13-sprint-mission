@@ -58,7 +58,7 @@ public class JavaApplication {
 
         //Basic
         UserService userService = new BasicUserService(userRepository);
-        MessageService messageService = new BasicMessageService(messageRepository);
+        MessageService messageService = new BasicMessageService(messageRepository, channelRepository);
         ChannelService channelService = new BasicChannelService(channelRepository);
 
         //수정 탬플릿

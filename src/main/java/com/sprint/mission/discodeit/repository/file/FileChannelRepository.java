@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
 import java.io.*;
@@ -9,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
+@Slf4j
 @Repository
 public class FileChannelRepository implements ChannelRepository {
     private final Path binaryPath = Path.of("data/channels.ser");
@@ -59,6 +61,7 @@ public class FileChannelRepository implements ChannelRepository {
         Map<UUID, Channel> data = load();
         data.put(channel.getId(), channel);
         save(data);
+        log.info(data.toString());
     }
 
     @Override
