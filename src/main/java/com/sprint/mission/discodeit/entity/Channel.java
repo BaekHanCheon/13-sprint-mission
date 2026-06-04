@@ -1,10 +1,13 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
 import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.UUID;
 
+@Getter
 public class Channel extends Entity implements Serializable {
 
     private ChannelType type;
@@ -29,50 +32,19 @@ public class Channel extends Entity implements Serializable {
         this.allowedUserList.remove(uid);
     }
 
-    public ArrayList<UUID> getAllowedUserList() {
-        return allowedUserList;
-    }
-
-
     //getter setter
-    @Override
-    public UUID getId() {
-        return super.getId();
-    }
-
-    @Override
-    public long getUpdatedAt() {
-        return super.getUpdatedAt();
-    }
-
-    @Override
-    public long getCreatedAt() {
-        return super.getCreatedAt();
-    }
 
     @Override
     public void updateUpdatedAt() {
         super.updateUpdatedAt();
     }
 
-    public String getName() {
-        return name;
-    }
-
     public void updateName(String name) {
         this.name = name;
     }
 
-    public String getDescription() {
-        return description;
-    }
-
     public void updateDescription(String description) {
         this.description = description;
-    }
-
-    public ChannelType getType() {
-        return type;
     }
 
     public void updateType(String type) {

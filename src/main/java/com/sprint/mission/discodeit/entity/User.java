@@ -1,9 +1,12 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.UUID;
 
+@Getter
 public class User extends Entity implements Serializable {
 
     private String password;
@@ -24,60 +27,26 @@ public class User extends Entity implements Serializable {
 
     //getter setter
 
-    @Override
-    public UUID getId() {
-        return super.getId();
-    }
-
-    @Override
-    public long getUpdatedAt() {
-        return super.getUpdatedAt();
-    }
-
-    @Override
-    public long getCreatedAt() {
-        return super.getCreatedAt();
-    }
 
     @Override
     public void updateUpdatedAt() {
         super.updateUpdatedAt();
     }
 
-    public String getPassword() {
-        return password;
-    }
-
     public void updatePassword(String password) {
         this.password = password;
-    }
-
-    public String getUserName() {
-        return userName;
     }
 
     public void updateUserName(String userName) {
         this.userName = userName;
     }
 
-    public String getEmail() {
-        return email;
-    }
-
     public void updateEmail(String email) {
         this.email = email;
     }
 
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
     public void updatePhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
-    }
-
-    public UserType getUserType() {
-        return userType;
     }
 
     public void updateUserType(UserType userType) {

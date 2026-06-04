@@ -21,6 +21,7 @@ public class DiscodeitApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(DiscodeitApplication.class, args);
+
 		MessageRepository messageRepository = new FileMessageRepository();
 		UserRepository userRepository = new FileUserRepository();
 		ChannelRepository channelRepository = new FileChannelRepository();
