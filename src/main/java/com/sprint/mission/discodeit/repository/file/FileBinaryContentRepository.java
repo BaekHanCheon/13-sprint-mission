@@ -1,0 +1,161 @@
+package com.sprint.mission.discodeit.repository.file;
+
+import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+
+@Repository
+@Slf4j
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
+public class FileBinaryContentRepository implements BinaryContentRepository {
+
+    private final Path binaryPath = Path.of("data/binaryContents.ser");
+
+    private final Path uploadPath;
+
+    private static final Set<String> ALLOWED_EXTENSIONS = Set.of(
+            // 이미지
+            ".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".svg",
+            // 문서
+            ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx",
+            // 텍스트
+            ".txt", ".md", ".csv", ".json"
+    );
+
+    public FileBinaryContentRepository(@Value("${discodeit.repository.file-directory:.discodeit}") String uploadDir) {
+        this.uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
+
+        try {
+            Files.createDirectories(uploadPath);
+            log.info("업로드 디렉토리 준비 완료: {}", uploadPath);
+        } catch (IOException e) {
+            throw new RuntimeException("업로드 디렉토리 생성 실패: " + uploadPath, e);
+        }
+    }
+
+    @Override
+    public void createBinaryContent(BinaryContent binaryContent) {
+        Map<UUID, BinaryContent> data = load();
+        data.put(binaryContent.getId(), binaryContent);
+        save(data);
+    }
+
+    @Override
+    public Optional<BinaryContent> findBinaryContentById(UUID id) {
+        BinaryContent binaryContent = load().get(id);
+        return Optional.ofNullable(binaryContent);
+    }
+
+    @Override
+    public List<BinaryContent> findAllBinaryContentByIdIn(List<UUID> idList) {
+        //return load().values().stream().sorted(Comparator.comparing(BinaryContent::getCreatedAt)).toList();
+        return null;
+    }
+
+    @Override
+    public void deleteBinaryContent(UUID id) {
+        Map<UUID, BinaryContent> data = load();
+        BinaryContent binaryContent = data.get(id);
+        if (binaryContent == null) {
+            throw new NoSuchElementException("삭제할 첨부파일이 없습니다: " + id);
+        }
+
+        Path path = uploadPath.resolve(binaryContent.getFileName()).normalize();
+
+        try {
+            Files.deleteIfExists(path);
+            log.info("파일 삭제 완료: {}", path);
+        } catch (IOException e) {
+            throw new RuntimeException("파일 삭제 실패: " + path, e);
+        }
+        data.remove(id);
+        save(data);
+
+    }
+
+
+
+
+    public String saveFile(Path sourcePath) {
+        String originFileName = sourcePath.getFileName().toString();
+
+        int dotIndex = originFileName.lastIndexOf(".");
+        String extension = (dotIndex >= 0) ? originFileName.substring(dotIndex).toLowerCase() : "";
+        if (!ALLOWED_EXTENSIONS.contains(extension)) {
+            throw new IllegalArgumentException("허용되지 않는 파일 형식입니다: " + extension);
+        }
+
+        String savedFileName = UUID.randomUUID().toString().replace("-", "") + extension;
+        Path targetPath = uploadPath.resolve(savedFileName).normalize();
+
+        try {
+            Files.copy(sourcePath, targetPath);
+            log.info("파일 저장 완료: {} (원본: {}, 크기: {} bytes)", savedFileName, originFileName, Files.size(sourcePath));
+            return savedFileName;
+        } catch (IOException e) {
+            throw new RuntimeException("파일 저장 실패: " + originFileName, e);
+        }
+    }
+
+    public ResponseEntity<Resource> getImage(String fileName) {
+        Path requested = uploadPath.resolve(fileName).normalize();
+
+        if (!Files.exists(requested) || Files.isDirectory(requested)) {
+            return ResponseEntity.notFound().build();
+        }
+        try {
+            Resource resource = new UrlResource(requested.toUri());
+            String contentType = Files.probeContentType(requested);
+            MediaType mediaType = (contentType == null)
+                    ? MediaType.APPLICATION_OCTET_STREAM
+                    : MediaType.parseMediaType(contentType);
+            return ResponseEntity.ok()
+                    .contentType(mediaType)
+                    .body(resource);
+        } catch (IOException e) {
+            log.error("파일 응답 실패: fileName={}", fileName, e);
+            return ResponseEntity.internalServerError().build();
+        }
+
+    }
+
+    private void save(Map<UUID, BinaryContent> storage) {
+        Path parent = binaryPath.getParent();
+        if (parent != null) {
+            try { Files.createDirectories(parent); }
+            catch (IOException e) { throw new RuntimeException(e); }
+        }
+        try (ObjectOutputStream oos = new ObjectOutputStream(
+                new BufferedOutputStream(Files.newOutputStream(binaryPath)))) {
+            oos.writeObject(new HashMap<>(storage));
+        } catch (IOException e) { throw new RuntimeException(e); }
+    }
+
+    private Map<UUID, BinaryContent> load() {
+        if (!Files.exists(binaryPath)) return new HashMap<>();
+        try (ObjectInputStream ois = new ObjectInputStream(
+                new BufferedInputStream(Files.newInputStream(binaryPath)))) {
+            return (Map<UUID, BinaryContent>) ois.readObject();
+        } catch (IOException | ClassNotFoundException e) { throw new RuntimeException(e); }
+    }
+
+
+
+}

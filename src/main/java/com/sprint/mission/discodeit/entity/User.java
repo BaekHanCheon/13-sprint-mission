@@ -1,9 +1,12 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
+import lombok.Builder;
 import lombok.Getter;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -14,15 +17,21 @@ public class User extends Entity implements Serializable {
     private String email;
     private String phoneNumber;
     private UserType userType;
+    private UUID profileId;
+    private UUID userStatusId;
+    private boolean isOnline;
+    private BinaryContentCreateRequest requests;
 
     //생성자
-    public User(String password, String userName, String email, String phoneNumber,UserType userType){
+    @Builder
+    public User(String password, String userName, String email, String phoneNumber, UserType userType, UUID profileId){
         super();
         this.password = password;
         this.userName = userName;
         this.email = email;
         this.phoneNumber = phoneNumber;
         this.userType = userType;
+        this.profileId = profileId;
     }
 
     //getter setter
@@ -40,9 +49,12 @@ public class User extends Entity implements Serializable {
     public void updateUserName(String userName) {
         this.userName = userName;
     }
-
     public void updateEmail(String email) {
         this.email = email;
+    }
+
+    public void updateUserStatusId (UUID userStatusId) {
+        this.userStatusId = userStatusId;
     }
 
     public void updatePhoneNumber(String phoneNumber) {
@@ -51,6 +63,14 @@ public class User extends Entity implements Serializable {
 
     public void updateUserType(UserType userType) {
         this.userType = userType;
+    }
+
+    public void updateProfileId(UUID profileId) {
+        this.profileId = profileId;
+    }
+
+    public void updateOnline(boolean online) {
+        isOnline = online;
     }
 
     @Override

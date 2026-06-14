@@ -1,24 +1,34 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
 public class Message extends Entity implements Serializable {
 
     private String content;
-    private UUID channelID;
-    private UUID authorId;
+    private final UUID channelId;
+    private final UUID authorId;
+    private List<UUID> attachmentIds;
+
 
     //생성자
-    public Message(String content, UUID authorId, UUID channelID) {
+    @Builder
+    public Message(String content, UUID authorId, UUID channelId) {
         super();
         this.content = content;
         this.authorId = authorId;
-        this.channelID = channelID;
+        this.channelId = channelId;
+        this.attachmentIds = new ArrayList<>();
     }
+
 
     //getter setter
 
@@ -26,12 +36,15 @@ public class Message extends Entity implements Serializable {
     public String toString() {
         return "메세지 : " +
                 "content='" + content + '\'' +
-                ", channelID=" + channelID +
+                ", channelID=" + channelId +
                 ", authorId=" + authorId +
                 "} " + super.toString();
     }
 
 
+    public void updateAttachmentIds(List<UUID> attachmentIds) {
+        this.attachmentIds = attachmentIds;
+    }
     public void updateContent(String content) {
         this.content = content;
     }

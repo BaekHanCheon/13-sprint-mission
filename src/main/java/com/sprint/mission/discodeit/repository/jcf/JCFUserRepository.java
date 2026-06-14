@@ -3,13 +3,29 @@ package com.sprint.mission.discodeit.repository.jcf;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
-
+@Repository
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf")
 public class JCFUserRepository implements UserRepository {
 
     private final Map<UUID, User> userData = new HashMap<>();
+
+    public boolean isExistEmail(String email) {
+        return userData.values().stream().anyMatch(u -> u.getEmail().equals(email));
+    }
+
+    public boolean isExistPhoneNumber(String phoneNumber) {
+        return userData.values().stream().anyMatch(u -> u.getPhoneNumber().equals(phoneNumber));
+    }
+
+    @Override
+    public boolean isExistUsername(String username) {
+        return userData.values().stream().anyMatch(u -> u.getPhoneNumber().equals(username));
+    }
 
     @Override
     public void createUser(User user) {
@@ -17,12 +33,9 @@ public class JCFUserRepository implements UserRepository {
     }
 
     @Override
-    public User findUserById(UUID id) {
+    public Optional<User> findUserById(UUID id) {
         User user = userData.get(id);
-        if (user == null) {
-            throw new IllegalArgumentException("유저를 찾을 수 없습니다.");
-        }
-        return user;
+        return Optional.ofNullable(user);
     }
 
     @Override
@@ -32,19 +45,14 @@ public class JCFUserRepository implements UserRepository {
 
     @Override
     public void updateUser(User user) {
+
         userData.put(user.getId(), user);
+
     }
 
     @Override
     public void deleteUser(UUID id) {
+
         userData.remove(id);
-    }
-
-    public boolean isExistEmail(User user) {
-        return userData.values().stream().anyMatch(u -> u.getEmail().equals(user.getEmail()));
-    }
-
-    public boolean isExistPhoneNumber(User user) {
-        return userData.values().stream().anyMatch(u -> u.getPhoneNumber().equals(user.getPhoneNumber()));
     }
 }
