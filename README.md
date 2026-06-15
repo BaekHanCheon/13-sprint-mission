@@ -54,7 +54,7 @@
 [x] 도메인 모델 간 관계를 고려해서 검증하는 로직을 추가하고, 테스트해보세요.
 
 🚀 [2차]
-  
+
 기본 요구사항
 File IO를 통한 데이터 영속화
 [x] 다음의 조건을 만족하는 서비스 인터페이스의 구현체를 작성하세요.
@@ -115,19 +115,19 @@ MANAGER 채널은 공지 채널로 매니저만 접근 가능합니다.
 
 ## 📸 스크린샷
 - 프로젝트 구성
-<img width="278" height="891" alt="스크린샷 2026-05-29 151944" src="https://github.com/user-attachments/assets/ac4d16ec-095c-4a38-ae76-93b5b59da6eb" />
+  <img width="278" height="891" alt="스크린샷 2026-05-29 151944" src="https://github.com/user-attachments/assets/ac4d16ec-095c-4a38-ae76-93b5b59da6eb" />
 
-- binary 파일 생성 결과/ 
-<img width="276" height="100" alt="스크린샷 2026-05-29 152845" src="https://github.com/user-attachments/assets/236e845f-6def-4c40-bd72-6004f7fbfe50" />
+- binary 파일 생성 결과/
+  <img width="276" height="100" alt="스크린샷 2026-05-29 152845" src="https://github.com/user-attachments/assets/236e845f-6def-4c40-bd72-6004f7fbfe50" />
 
 - 채널에 따른 메시지 제한 결과
-<img width="1118" height="641" alt="스크린샷 2026-05-29 190431" src="https://github.com/user-attachments/assets/1f129abd-686f-4466-82f0-ef9def5d68d0" />
+  <img width="1118" height="641" alt="스크린샷 2026-05-29 190431" src="https://github.com/user-attachments/assets/1f129abd-686f-4466-82f0-ef9def5d68d0" />
 
 - 2차 심화 탬플릿 수정본
-<img width="1114" height="777" alt="스크린샷 2026-05-29 151814" src="https://github.com/user-attachments/assets/f650684b-40cd-4dc8-b42f-ff680f8a549b" />
+  <img width="1114" height="777" alt="스크린샷 2026-05-29 151814" src="https://github.com/user-attachments/assets/f650684b-40cd-4dc8-b42f-ff680f8a549b" />
 
 - 2차 심화 실행결과
-<img width="524" height="119" alt="스크린샷 2026-05-29 174600" src="https://github.com/user-attachments/assets/9f035f91-7e38-4b94-9607-952ccdaea9be" />
+  <img width="524" height="119" alt="스크린샷 2026-05-29 174600" src="https://github.com/user-attachments/assets/9f035f91-7e38-4b94-9607-952ccdaea9be" />
 
 ---
 

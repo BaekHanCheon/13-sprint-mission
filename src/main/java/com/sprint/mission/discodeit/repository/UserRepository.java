@@ -1,19 +1,19 @@
 package com.sprint.mission.discodeit.repository;
 
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 
-import java.util.Map;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface UserRepository {
 
     void createUser(User user);
-    User readUser(UUID id);
-    void readAllUser();
-    void modifyUser(User user);
+    Optional<User> findUserById(UUID id);
+    List<User> findAllUser();
+    void updateUser(User user);
     void deleteUser(UUID id);
-    boolean isExistEmail(User user);
-    boolean isExistPhoneNumber(User user);
+    boolean isExistEmail(String email);
+    boolean isExistPhoneNumber(String phoneNumber);
+    boolean isExistUsername(String username);
 }
