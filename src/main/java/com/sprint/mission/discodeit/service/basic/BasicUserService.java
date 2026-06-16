@@ -42,10 +42,6 @@ public class BasicUserService implements UserService {
                 log.info("메시지에 첨부파일이 없습니다.");
         }
 
-
-
-
-
         //userStatus 생성
         UserStatus userStatus = new UserStatus(user.getId(),null);
         user.updateUserStatusId(userStatus.getId());
