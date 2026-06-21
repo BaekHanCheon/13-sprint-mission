@@ -56,11 +56,11 @@ public class Channel extends Entity implements Serializable {
     }
 
     public void updateType(ChannelType type) {
-        if(type == ChannelType.PUBLIC){
+        if(type.equals(ChannelType.PUBLIC)){
             this.type = ChannelType.PUBLIC;
-        } else if (type == ChannelType.PRIVATE){
+        } else if (type.equals(ChannelType.PRIVATE)){
             this.type = ChannelType.PRIVATE;
-        } else if (type == ChannelType.MANAGER){
+        } else if (type.equals(ChannelType.MANAGER)){
             this.type = ChannelType.MANAGER;
         } else {
             System.out.println("올바른 채널 타입이 아닙니다.");

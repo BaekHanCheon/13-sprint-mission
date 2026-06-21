@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -41,7 +42,14 @@ public class BinaryContentService {
     }
 
     public BinaryContentResponse findBinaryContentById(UUID id) {
-        return repository.findBinaryContentById(id).map(BinaryContentResponse::from).orElseThrow(() -> new NoSuchElementException("BinaryContent not found"));
+        BinaryContent binaryContent = repository.findBinaryContentById(id)
+                .orElseThrow(() -> new NoSuchElementException("BinaryContent not found"));
+
+        byte[] data = repository.readFile(binaryContent.getFileName());
+        String contentType = repository.getContentType(binaryContent.getFileName());
+        String base64 = Base64.getEncoder().encodeToString(data);
+
+        return BinaryContentResponse.from(binaryContent, contentType, base64);
     }
 
     public List<BinaryContentResponse> findAllBinaryContent(List<UUID> idList) {

@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.MessageResponse;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserResponse;
+import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
@@ -58,7 +59,8 @@ public class DiscodeitApplication {
 						"010-1111-1111",UserType.GENERAL,new BinaryContentCreateRequest(Path.of("src/main/resources/images/image1.jpg")))
 		);
 
-
+		UserUpdateRequest request = new UserUpdateRequest(user1.id(),"qwer","박길동","zxcv@naver.com","010-0000-0000",UserType.GENERAL,null);
+		userService.updateUser(request);
 		ChannelResponse channel1 = channelService.createPublicChannel(
 				new ChannelPublicCreateRequest("오늘 뭐먹지 채널","공개채널입니다.")
 		);
@@ -90,10 +92,10 @@ public class DiscodeitApplication {
 		);
 
 		userService.deleteUser(user1.id());
-
-
-
 */
+
+
+
     }
 
 

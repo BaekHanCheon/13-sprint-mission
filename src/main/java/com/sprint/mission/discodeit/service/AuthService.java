@@ -26,6 +26,7 @@ public class AuthService {
         if (!user.getPassword().equals(request.password())) {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
+        user.updateOnline(true);
 
         return user;
     }

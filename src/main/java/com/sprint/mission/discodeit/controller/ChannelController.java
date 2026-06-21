@@ -2,51 +2,60 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.channel.ChannelPrivateCreateRequest;
 import com.sprint.mission.discodeit.dto.channel.ChannelPublicCreateRequest;
+import com.sprint.mission.discodeit.dto.channel.ChannelResponse;
 import com.sprint.mission.discodeit.dto.channel.ChannelUpdateRequest;
+import com.sprint.mission.discodeit.dto.user.UserResponse;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/channels")
+@RequestMapping("/api/channel")
 @RequiredArgsConstructor
 public class ChannelController {
 
     private final ChannelService channelService;
 
     @RequestMapping(value = {"/createPublicChannel"}, method = RequestMethod.POST)
-    public String createPublicChannel(@RequestBody ChannelPublicCreateRequest request) {
-        channelService.createPublicChannel(request);
+    public ResponseEntity<ChannelResponse> createPublicChannel(@RequestBody ChannelPublicCreateRequest request) {
 
-        return "public channel created";
+        return ResponseEntity.ok(channelService.createPublicChannel(request));
     }
 
     @RequestMapping(value = {"/createPrivateChannel"}, method = RequestMethod.POST)
-    public String createPrivateChannel(@RequestBody ChannelPrivateCreateRequest request) {
-        channelService.createPrivateChannel(request);
+    public ResponseEntity<ChannelResponse> createPrivateChannel(@RequestBody ChannelPrivateCreateRequest request) {
 
-        return "private channel created";
+        return ResponseEntity.ok(channelService.createPrivateChannel(request));
     }
 
-    @RequestMapping(value = {"/updateChannel"}, method = RequestMethod.PUT)
-    public String updateChannel(@RequestBody ChannelUpdateRequest request) {
-        channelService.updateChannel(request);
+    @RequestMapping(value = {"/updateChannel"}, method = RequestMethod.PATCH)
+    public ResponseEntity<ChannelResponse> updateChannel(@RequestBody ChannelUpdateRequest request) {
 
-        return "channel updated";
+        return ResponseEntity.ok(channelService.updateChannel(request));
     }
 
-    @RequestMapping(value = {"/deleteChannel"}, method = RequestMethod.DELETE)
-    public String deleteChannel(@RequestParam("id") UUID channelId) {
+    @RequestMapping(value = {"/deleteChannel/{channelId}"}, method = RequestMethod.DELETE)
+    public String deleteChannel(@PathVariable("channelId") UUID channelId) {
         channelService.deleteChannel(channelId);
 
         return "channel deleted";
     }
 
-    public void findChannelByUserId() {
+    @RequestMapping(value = {"/findAllChannelByUserId/{channelId}"}, method = RequestMethod.GET)
+    public ResponseEntity<List<ChannelResponse>> findChannelByUserId(@PathVariable("channelId") UUID userId) {
 
+        return ResponseEntity.ok(channelService.findAllByUserId(userId));
     }
 
 }
+//채널 관리
+//[ ] 공개 채널을 생성할 수 있다.
+//[ ] 비공개 채널을 생성할 수 있다.
+//[ ] 공개 채널의 정보를 수정할 수 있다.
+//        [ ] 채널을 삭제할 수 있다.
+//        [ ] 특정 사용자가 볼 수 있는 모든 채널 목록을 조회할 수 있다.

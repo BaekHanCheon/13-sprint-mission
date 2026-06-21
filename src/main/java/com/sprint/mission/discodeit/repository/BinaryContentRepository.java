@@ -15,5 +15,9 @@ public interface BinaryContentRepository {
 
     public String saveFile(Path sourcePath);
 
+    public byte[] readFile(String fileName);
+
+    public String getContentType(String fileName);
+
 
 }

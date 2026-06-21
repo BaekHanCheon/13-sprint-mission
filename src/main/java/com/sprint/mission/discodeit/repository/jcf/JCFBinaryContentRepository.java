@@ -103,6 +103,30 @@ public class JCFBinaryContentRepository implements BinaryContentRepository {
         }
     }
 
+    @Override
+    public byte[] readFile(String fileName) {
+        Path requested = uploadPath.resolve(fileName).normalize();
+        if (!Files.exists(requested) || Files.isDirectory(requested)) {
+            throw new NoSuchElementException("파일을 찾을 수 없습니다: " + fileName);
+        }
+        try {
+            return Files.readAllBytes(requested);
+        } catch (IOException e) {
+            throw new RuntimeException("파일 읽기 실패: " + fileName, e);
+        }
+    }
+
+    @Override
+    public String getContentType(String fileName) {
+        Path requested = uploadPath.resolve(fileName).normalize();
+        try {
+            String contentType = Files.probeContentType(requested);
+            return (contentType != null) ? contentType : MediaType.APPLICATION_OCTET_STREAM_VALUE;
+        } catch (IOException e) {
+            return MediaType.APPLICATION_OCTET_STREAM_VALUE;
+        }
+    }
+
     public ResponseEntity<Resource> getImage(String fileName) {
         Path requested = uploadPath.resolve(fileName).normalize();
 

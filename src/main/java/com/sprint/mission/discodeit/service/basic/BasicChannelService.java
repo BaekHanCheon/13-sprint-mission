@@ -95,7 +95,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public void updateChannel(ChannelUpdateRequest request) {
+    public ChannelResponse updateChannel(ChannelUpdateRequest request) {
         Channel channel = getChannelOrThrow(request.id());
 
         // PRIVATE 채널 수정 불가
@@ -107,6 +107,9 @@ public class BasicChannelService implements ChannelService {
         channel.updateDescription(request.description());
         channel.updateUpdatedAt();
         repository.updateChannel(channel);
+        Instant lastMessageAt = getLastMessageAt(request.id());
+
+        return ChannelResponse.from(channel, lastMessageAt);
     }
 
     @Override

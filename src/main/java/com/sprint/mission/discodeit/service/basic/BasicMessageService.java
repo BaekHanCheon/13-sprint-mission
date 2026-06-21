@@ -72,7 +72,7 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public void updateMessage(MessageUpdateRequest request) {
+    public MessageResponse updateMessage(MessageUpdateRequest request) {
         Message message = getMessageOrThrow(request.id());
 
         message.updateContent(request.content());
@@ -80,6 +80,8 @@ public class BasicMessageService implements MessageService {
         message.updateUpdatedAt();
         repository.updateMessage(message);
         log.info("{} 메시지 수정됨", message.getContent());
+
+        return MessageResponse.from(message);
     }
 
     @Override

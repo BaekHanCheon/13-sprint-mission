@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service;
 
+import com.sprint.mission.discodeit.dto.user.UserResponse;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponse;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateRequest;
@@ -47,19 +48,22 @@ public class UserStatusService {
     }
 
 
-    public void updateUserStatus(UserStatusUpdateRequest request){//파라미터값 value만 적용
+    public UserStatusResponse updateUserStatus(UserStatusUpdateRequest request){//파라미터값 value만 적용
         UserStatus userStatus = getUserStatusOrThrow(request.id());
-        //userStatus.updateLastUserAt(request.lastUserAt());
+        userStatus.updateLastOnline(request.lastOnline());
+        userStatus.updateUserStatus(request.userStatus());
         userStatus.updateUpdatedAt();
 
         repository.updateUserStatus(userStatus);
+        return UserStatusResponse.from(userStatus);
     }
 
-    public void updateUserByUserId(UUID userid){ //수정 프로퍼티 미정
-        User user = userRepository.findUserById(userid).orElseThrow(() -> new NoSuchElementException("유저가 없습니다."));
-
-        user.updateUpdatedAt();
-        userRepository.updateUser(user);
+    public UserStatusResponse updateUserStatusByUserId(UserStatusUpdateRequest request){ //수정 프로퍼티 미정
+        User user = userRepository.findUserById(request.id()).orElseThrow(() -> new NoSuchElementException("유저가 없습니다."));
+        UserStatus userStatus = getUserStatusOrThrow(user.getUserStatusId());
+        userStatus.updateUpdatedAt();
+        repository.updateUserStatus(userStatus);
+        return UserStatusResponse.from(userStatus);
     }
 
     public void deleteUserStatus(UUID userStatusId){
