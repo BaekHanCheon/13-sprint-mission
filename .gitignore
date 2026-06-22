@@ -1,3 +1,7 @@
+/memory
+.agents
+.claude
+.ser
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar

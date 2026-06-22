@@ -18,12 +18,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthService authService;
+  private final AuthService authService;
 
-    @RequestMapping(value = {"/login"}, method = RequestMethod.GET)
-    public ResponseEntity<User> login(@ModelAttribute AuthLoginRequest request) {
+  @GetMapping("/login")
+  public ResponseEntity<User> login(@ModelAttribute AuthLoginRequest request) {
 
-        return ResponseEntity.ok(authService.login(request));
-    }
+    return ResponseEntity.ok(authService.login(request));
+  }
 
 }

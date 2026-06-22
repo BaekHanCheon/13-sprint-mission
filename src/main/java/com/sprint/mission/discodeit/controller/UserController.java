@@ -24,13 +24,13 @@ public class UserController {
     private final UserStatusService userStatusService;
 
 
-    @RequestMapping(value = {"/createUser"}, method = RequestMethod.POST)
+    @PostMapping("/createUser")
     public ResponseEntity<UserResponse> createUser(@RequestBody UserCreateRequest request) {
 
         return ResponseEntity.ok(userService.createUser(request));
     }
 
-    @RequestMapping(value = {"/updateUser"}, method = RequestMethod.PATCH)
+    @PatchMapping("/updateUser")
     public ResponseEntity<UserResponse> updateUser(@RequestBody UserUpdateRequest request) {
 
         return ResponseEntity.ok(userService.updateUser(request));
@@ -42,13 +42,13 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
-    @RequestMapping(value = {"/findAll"}, method = RequestMethod.GET)
+    @GetMapping("/findAll")
     public List<UserResponse> findAllUser() {
 
         return userService.findAllUser();
     }
 
-    @RequestMapping(value = {"/updateUserStatusByUserId"}, method = RequestMethod.PATCH)
+    @PatchMapping("/updateUserStatusByUserId")
     public ResponseEntity<UserStatusResponse> updateUserStatusByUserId (@RequestBody UserStatusUpdateRequest request) {
 
         return ResponseEntity.ok(userStatusService.updateUserStatusByUserId(request));

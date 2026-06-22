@@ -6,8 +6,8 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,13 +21,13 @@ public class BinaryContentController {
 
     private final BinaryContentService binaryContentService;
 
-    @RequestMapping(value = {"/find"}, method = RequestMethod.GET)
+    @GetMapping("/find")
     public ResponseEntity<BinaryContentResponse> findBinaryContentById(@RequestParam("binaryContentId") UUID id) {
 
         return ResponseEntity.ok(binaryContentService.findBinaryContentById(id));
     }
 
-    @RequestMapping(value = {"/findAllBinaryContentById"}, method = RequestMethod.GET)
+    @GetMapping("/findAllBinaryContentById")
     public ResponseEntity<List<BinaryContentResponse>> findAllBinaryContentById(@RequestParam("id") List<UUID> idList) {
 
         return ResponseEntity.ok(binaryContentService.findAllBinaryContent(idList));

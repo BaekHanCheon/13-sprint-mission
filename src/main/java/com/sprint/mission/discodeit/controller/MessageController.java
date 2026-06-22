@@ -20,26 +20,26 @@ public class MessageController {
     private final MessageService messageService;
 
 
-    @RequestMapping(value = {"/createMessage"}, method = RequestMethod.POST)
+    @PostMapping("/createMessage")
     public ResponseEntity<MessageResponse> createMessage(@RequestBody MessageCreateRequest request) {
 
         return ResponseEntity.ok(messageService.createMessage(request));
     }
 
-    @RequestMapping(value = {"/updateMessage"}, method = RequestMethod.PATCH)
+    @PatchMapping("/updateMessage")
     public ResponseEntity<MessageResponse> updateMessage(@RequestBody MessageUpdateRequest request) {
 
         return ResponseEntity.ok(messageService.updateMessage(request));
     }
 
-    @RequestMapping(value = {"/deleteMessage"}, method = RequestMethod.DELETE)
+    @DeleteMapping("/deleteMessage")
     public String deleteMessage(@RequestParam("id") UUID messageId) {
         messageService.deleteMessage(messageId);
 
         return "message deleted";
     }
 
-    @RequestMapping(value = {"/findAllMessageByChannelId"}, method = RequestMethod.GET)
+    @GetMapping("/findAllMessageByChannelId")
     public ResponseEntity<List<MessageResponse>> findMessageByChannelId(@RequestParam("id") UUID channelId) {
 
         return ResponseEntity.ok(messageService.findAllMessageByChannelId(channelId));

@@ -21,32 +21,32 @@ public class ChannelController {
 
     private final ChannelService channelService;
 
-    @RequestMapping(value = {"/createPublicChannel"}, method = RequestMethod.POST)
+    @PostMapping("/createPublicChannel")
     public ResponseEntity<ChannelResponse> createPublicChannel(@RequestBody ChannelPublicCreateRequest request) {
 
         return ResponseEntity.ok(channelService.createPublicChannel(request));
     }
 
-    @RequestMapping(value = {"/createPrivateChannel"}, method = RequestMethod.POST)
+    @PostMapping("/createPrivateChannel")
     public ResponseEntity<ChannelResponse> createPrivateChannel(@RequestBody ChannelPrivateCreateRequest request) {
 
         return ResponseEntity.ok(channelService.createPrivateChannel(request));
     }
 
-    @RequestMapping(value = {"/updateChannel"}, method = RequestMethod.PATCH)
+    @PatchMapping("/updateChannel")
     public ResponseEntity<ChannelResponse> updateChannel(@RequestBody ChannelUpdateRequest request) {
 
         return ResponseEntity.ok(channelService.updateChannel(request));
     }
 
-    @RequestMapping(value = {"/deleteChannel/{channelId}"}, method = RequestMethod.DELETE)
+    @DeleteMapping("/deleteChannel/{channelId}")
     public String deleteChannel(@PathVariable("channelId") UUID channelId) {
         channelService.deleteChannel(channelId);
 
         return "channel deleted";
     }
 
-    @RequestMapping(value = {"/findAllChannelByUserId/{channelId}"}, method = RequestMethod.GET)
+    @GetMapping("/findAllChannelByUserId/{channelId}")
     public ResponseEntity<List<ChannelResponse>> findChannelByUserId(@PathVariable("channelId") UUID userId) {
 
         return ResponseEntity.ok(channelService.findAllByUserId(userId));

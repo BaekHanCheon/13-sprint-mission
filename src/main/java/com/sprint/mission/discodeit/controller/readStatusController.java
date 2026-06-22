@@ -20,19 +20,19 @@ public class readStatusController {
 
     private final ReadStatusService readStatusService;
 
-    @RequestMapping(value = {"/createReadStatus"}, method = RequestMethod.POST)
+    @PostMapping("/createReadStatus")
     public ResponseEntity<ReadStatusResponse> createReadStatus(@RequestBody ReadStatusCreateRequest request) {
 
         return ResponseEntity.ok(readStatusService.createReadStatus(request));
     }
 
-    @RequestMapping(value = {"/updateReadStatus"}, method = RequestMethod.PATCH)
+    @PatchMapping("/updateReadStatus")
     public ResponseEntity<ReadStatusResponse> updateReadStatus(@RequestBody ReadStatusUpdateRequest request) {
 
         return ResponseEntity.ok(readStatusService.updateReadStatus(request));
     }
 
-    @RequestMapping(value = {"/findAllReadStatusByUserId"}, method = RequestMethod.GET)
+    @GetMapping("/findAllReadStatusByUserId")
     public List<ReadStatusResponse> findAllReadStatusByUserId(@RequestParam("id") UUID userId) {
 
         return readStatusService.findAllReadStatusByUserId(userId);
