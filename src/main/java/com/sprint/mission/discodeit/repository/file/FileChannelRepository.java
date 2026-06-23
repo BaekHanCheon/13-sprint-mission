@@ -15,7 +15,7 @@ import java.util.*;
 @Repository
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 public class FileChannelRepository implements ChannelRepository {
-    private final Path binaryPath = Path.of("data/channels.ser");
+    private final static Path binaryPath = Path.of("data/channels.ser");
 
     @Override
     public void createChannel(Channel channel) {

@@ -14,7 +14,7 @@ import java.util.*;
 @Repository
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 public class FileUserRepository implements UserRepository {
-    private final Path binaryPath = Path.of("data/Users.ser");
+    private final static Path binaryPath = Path.of("data/Users.ser");
 
     public boolean isExistEmail(String email) {
         return load().values().stream().anyMatch(u -> u.getEmail().equals(email));
@@ -26,7 +26,7 @@ public class FileUserRepository implements UserRepository {
 
     @Override
     public boolean isExistUsername(String username) {
-        return load().values().stream().anyMatch(u -> u.getPhoneNumber().equals(username));
+        return load().values().stream().anyMatch(u -> u.getUserName().equals(username));
     }
 
     @Override

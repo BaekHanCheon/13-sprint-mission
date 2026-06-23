@@ -26,7 +26,7 @@ import java.util.*;
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 public class FileBinaryContentRepository implements BinaryContentRepository {
 
-    private final Path binaryPath = Path.of("data/binaryContents.ser");
+    private final static Path binaryPath = Path.of("data/binaryContents.ser");
 
     private final Path uploadPath;
 
@@ -114,26 +114,28 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
         }
     }
 
-    public ResponseEntity<Resource> getImage(String fileName) {
+    @Override
+    public byte[] readFile(String fileName) {
         Path requested = uploadPath.resolve(fileName).normalize();
-
         if (!Files.exists(requested) || Files.isDirectory(requested)) {
-            return ResponseEntity.notFound().build();
+            throw new NoSuchElementException("파일을 찾을 수 없습니다: " + fileName);
         }
         try {
-            Resource resource = new UrlResource(requested.toUri());
-            String contentType = Files.probeContentType(requested);
-            MediaType mediaType = (contentType == null)
-                    ? MediaType.APPLICATION_OCTET_STREAM
-                    : MediaType.parseMediaType(contentType);
-            return ResponseEntity.ok()
-                    .contentType(mediaType)
-                    .body(resource);
+            return Files.readAllBytes(requested);
         } catch (IOException e) {
-            log.error("파일 응답 실패: fileName={}", fileName, e);
-            return ResponseEntity.internalServerError().build();
+            throw new RuntimeException("파일 읽기 실패: " + fileName, e);
         }
+    }
 
+    @Override
+    public String getContentType(String fileName) {
+        Path requested = uploadPath.resolve(fileName).normalize();
+        try {
+            String contentType = Files.probeContentType(requested);
+            return (contentType != null) ? contentType : MediaType.APPLICATION_OCTET_STREAM_VALUE;
+        } catch (IOException e) {
+            return MediaType.APPLICATION_OCTET_STREAM_VALUE;
+        }
     }
 
     private void save(Map<UUID, BinaryContent> storage) {

@@ -11,15 +11,23 @@ public record BinaryContentResponse(
         Instant createdAt,
         String fileName,
         UUID userId,
-        UUID messageId
+        UUID messageId,
+        String contentType,
+        String bytes
 ) {
     public static BinaryContentResponse from(BinaryContent binaryContent) {
+        return from(binaryContent, null, null);
+    }
+
+    public static BinaryContentResponse from(BinaryContent binaryContent, String contentType, String bytes) {
         return new BinaryContentResponse(
                 binaryContent.getId(),
                 binaryContent.getCreatedAt(),
                 binaryContent.getFileName(),
                 binaryContent.getUserId(),
-                binaryContent.getMessageId()
+                binaryContent.getMessageId(),
+                contentType,
+                bytes
         );
     }
 }

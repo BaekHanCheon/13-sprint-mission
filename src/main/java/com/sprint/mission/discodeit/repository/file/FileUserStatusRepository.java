@@ -14,7 +14,7 @@ import java.util.*;
 @Repository
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 public class FileUserStatusRepository implements UserStatusRepository {
-    private final Path binaryPath = Path.of("data/Userstatuses.ser");
+    private final static Path binaryPath = Path.of("data/Userstatuses.ser");
 
 
     @Override

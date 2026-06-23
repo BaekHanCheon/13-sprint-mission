@@ -5,11 +5,12 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
 
 @Getter
-public class ReadStatus extends Entity {
+public class ReadStatus extends Entity implements Serializable {
     private UUID userId;
     private UUID channelId;
     private Instant lastReadAt;

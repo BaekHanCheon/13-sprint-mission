@@ -15,7 +15,7 @@ import java.util.*;
 @Repository
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 public class FileMessageRepository implements MessageRepository {
-    private final Path binaryPath = Path.of("data/Messages.ser");
+    private final static Path binaryPath = Path.of("data/Messages.ser");
 
     @Override
     public void createMessage(Message message) {
