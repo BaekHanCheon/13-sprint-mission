@@ -48,9 +48,9 @@ public class ReadStatusService {
         return repository.findAllReadStatusByUserId(userId).stream().map(ReadStatusResponse::from).toList();
     }
 
-    public ReadStatusResponse updateReadStatus(ReadStatusUpdateRequest request){
-        ReadStatus readStatus = getReadStatusOrThrow(request.id());
-        readStatus.updateLastReadAt(request.lastReadAt());
+    public ReadStatusResponse updateReadStatus(UUID readStatusId, ReadStatusUpdateRequest request){
+        ReadStatus readStatus = getReadStatusOrThrow(readStatusId);
+        readStatus.updateLastReadAt(request.newLastReadAt());
         readStatus.updateUpdatedAt();
 
         repository.updateReadStatus(readStatus);

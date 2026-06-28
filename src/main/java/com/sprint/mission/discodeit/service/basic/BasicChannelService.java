@@ -20,6 +20,7 @@ import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -44,10 +45,11 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public ChannelResponse createPublicChannel(ChannelPublicCreateRequest request) {
+        // PRIVATE 채널은 name이 null이므로 null-안전 비교가 필요하다.
         boolean isDuplicate = repository.findAllChannel().stream()
-                .anyMatch(c -> c.getName().equals(request.title()));
+                .anyMatch(c -> Objects.equals(c.getName(), request.name()));
         if (isDuplicate) {
-            throw new IllegalStateException("이미 존재하는 채널 이름입니다: " + request.title());
+            throw new IllegalStateException("이미 존재하는 채널 이름입니다: " + request.name());
         }
         Channel channel = request.toEntity();
 
@@ -63,8 +65,8 @@ public class BasicChannelService implements ChannelService {
 
         Channel channel = request.toEntity();
 
-        List<UUID> userIdList = request.userIdList();
-        userIdList.forEach(id -> channel.addAllowedUserList(id));
+        List<UUID> userIdList = request.participantIds();
+        // toEntity()에서 이미 allowedUserList를 채우므로 중복 추가하지 않는다.
         // 각 유저마다 ReadStatus 생성
         userIdList.forEach(userId -> {
             ReadStatus readStatus = new ReadStatus(userId, channel.getId());
@@ -95,8 +97,8 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public ChannelResponse updateChannel(ChannelUpdateRequest request) {
-        Channel channel = getChannelOrThrow(request.id());
+    public ChannelResponse updateChannel(UUID channelId, ChannelUpdateRequest request) {
+        Channel channel = getChannelOrThrow(channelId);
 
         // PRIVATE 채널 수정 불가
         if (channel.getType() == ChannelType.PRIVATE) {
@@ -107,7 +109,7 @@ public class BasicChannelService implements ChannelService {
         channel.updateDescription(request.description());
         channel.updateUpdatedAt();
         repository.updateChannel(channel);
-        Instant lastMessageAt = getLastMessageAt(request.id());
+        Instant lastMessageAt = getLastMessageAt(channelId);
 
         return ChannelResponse.from(channel, lastMessageAt);
     }

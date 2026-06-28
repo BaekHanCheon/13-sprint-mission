@@ -8,11 +8,11 @@ import java.util.List;
 import java.util.UUID;
 
 public record ChannelPrivateCreateRequest(
-        ArrayList<UUID> userIdList
+        ArrayList<UUID> participantIds
 ) {
     public Channel toEntity() {
     return Channel.privateChannelBuilder()
-            .allowedUserList(userIdList)
+            .allowedUserList(participantIds)
             .build();
     }
 }

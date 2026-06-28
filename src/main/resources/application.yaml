@@ -12,3 +12,12 @@ discodeit:
   repository:
     type: jcf   # jcf | file
     file-directory: .discodeit
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html       # Swagger UI 접근 경로
+    operations-sorter: method    # HTTP 메서드 순으로 정렬
+    tags-sorter: alpha           # 태그 알파벳 순 정렬
+    display-request-duration: true
+  api-docs:
+    path: /v3/api-docs           # OpenAPI 스펙(JSON) 경로

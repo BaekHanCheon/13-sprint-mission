@@ -5,12 +5,13 @@ import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.User;
 
 public record ChannelPublicCreateRequest(
-        String title,
+        String name,
         String description
 ) {
     public Channel toEntity() {
         return Channel.publicChannelBuilder()
-                .name(title)
+                .type(ChannelType.PUBLIC)
+                .name(name)
                 .description(description)
                 .build();
     }

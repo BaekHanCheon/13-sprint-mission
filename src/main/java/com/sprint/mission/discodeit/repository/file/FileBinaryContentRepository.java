@@ -19,6 +19,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 
 @Repository
@@ -26,138 +27,151 @@ import java.util.*;
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 public class FileBinaryContentRepository implements BinaryContentRepository {
 
-    private final static Path binaryPath = Path.of("data/binaryContents.ser");
+  private final static Path BINARY_PATH = Path.of("data/binaryContents.ser");
 
-    private final Path uploadPath;
+  private final Path uploadPath;
 
-    private static final Set<String> ALLOWED_EXTENSIONS = Set.of(
-            // 이미지
-            ".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".svg",
-            // 문서
-            ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx",
-            // 텍스트
-            ".txt", ".md", ".csv", ".json"
-    );
+  private static final Set<String> ALLOWED_EXTENSIONS = Set.of(
+      // 이미지
+      ".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".svg",
+      // 문서
+      ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx",
+      // 텍스트
+      ".txt", ".md", ".csv", ".json"
+  );
 
-    public FileBinaryContentRepository(@Value("${discodeit.repository.file-directory:.discodeit}") String uploadDir) {
-        this.uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
+  public FileBinaryContentRepository(
+      @Value("${discodeit.repository.file-directory:.discodeit}") String uploadDir) {
+    this.uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
 
-        try {
-            Files.createDirectories(uploadPath);
-            log.info("업로드 디렉토리 준비 완료: {}", uploadPath);
-        } catch (IOException e) {
-            throw new RuntimeException("업로드 디렉토리 생성 실패: " + uploadPath, e);
-        }
+    try {
+      Files.createDirectories(uploadPath);
+      log.info("업로드 디렉토리 준비 완료: {}", uploadPath);
+    } catch (IOException e) {
+      throw new RuntimeException("업로드 디렉토리 생성 실패: " + uploadPath, e);
+    }
+  }
+
+  @Override
+  public void createBinaryContent(BinaryContent binaryContent) {
+    Map<UUID, BinaryContent> data = load();
+    data.put(binaryContent.getId(), binaryContent);
+    save(data);
+  }
+
+  @Override
+  public Optional<BinaryContent> findBinaryContentById(UUID id) {
+    BinaryContent binaryContent = load().get(id);
+    return Optional.ofNullable(binaryContent);
+  }
+
+  @Override
+  public Optional<List<BinaryContent>> findAllBinaryContentByIdIn(List<UUID> idList) {
+    Map<UUID, BinaryContent> data = load();
+    return Optional.of(idList.stream()
+        .map(data::get)
+        .filter(Objects::nonNull)
+        .toList());
+  }
+
+  @Override
+  public void deleteBinaryContent(UUID id) {
+    Map<UUID, BinaryContent> data = load();
+    BinaryContent binaryContent = data.get(id);
+    if (binaryContent == null) {
+      throw new NoSuchElementException("삭제할 첨부파일이 없습니다: " + id);
     }
 
-    @Override
-    public void createBinaryContent(BinaryContent binaryContent) {
-        Map<UUID, BinaryContent> data = load();
-        data.put(binaryContent.getId(), binaryContent);
-        save(data);
+    Path path = uploadPath.resolve(binaryContent.getFileName()).normalize();
+
+    try {
+      Files.deleteIfExists(path);
+      log.info("파일 삭제 완료: {}", path);
+    } catch (IOException e) {
+      throw new RuntimeException("파일 삭제 실패: " + path, e);
+    }
+    data.remove(id);
+    save(data);
+
+  }
+
+
+  @Override
+  public String saveFile(MultipartFile file) {
+    String originFileName = StringUtils.hasText(file.getOriginalFilename())
+        ? file.getOriginalFilename() : "upload";
+
+    int dotIndex = originFileName.lastIndexOf(".");
+    String extension = (dotIndex >= 0) ? originFileName.substring(dotIndex).toLowerCase() : "";
+    if (!ALLOWED_EXTENSIONS.contains(extension)) {
+      throw new IllegalArgumentException("허용되지 않는 파일 형식입니다: " + extension);
     }
 
-    @Override
-    public Optional<BinaryContent> findBinaryContentById(UUID id) {
-        BinaryContent binaryContent = load().get(id);
-        return Optional.ofNullable(binaryContent);
+    String savedFileName = UUID.randomUUID().toString().replace("-", "") + extension;
+    Path targetPath = uploadPath.resolve(savedFileName).normalize();
+
+    try {
+      Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+      log.info("파일 저장 완료: {} (원본: {}, 크기: {} bytes)", savedFileName, originFileName,
+          file.getSize());
+      return savedFileName;
+    } catch (IOException e) {
+      throw new RuntimeException("파일 저장 실패: " + originFileName, e);
     }
+  }
 
-    @Override
-    public List<BinaryContent> findAllBinaryContentByIdIn(List<UUID> idList) {
-        //return load().values().stream().sorted(Comparator.comparing(BinaryContent::getCreatedAt)).toList();
-        return null;
+  @Override
+  public byte[] readFile(String fileName) {
+    Path requested = uploadPath.resolve(fileName).normalize();
+    if (!Files.exists(requested) || Files.isDirectory(requested)) {
+      throw new NoSuchElementException("파일을 찾을 수 없습니다: " + fileName);
     }
-
-    @Override
-    public void deleteBinaryContent(UUID id) {
-        Map<UUID, BinaryContent> data = load();
-        BinaryContent binaryContent = data.get(id);
-        if (binaryContent == null) {
-            throw new NoSuchElementException("삭제할 첨부파일이 없습니다: " + id);
-        }
-
-        Path path = uploadPath.resolve(binaryContent.getFileName()).normalize();
-
-        try {
-            Files.deleteIfExists(path);
-            log.info("파일 삭제 완료: {}", path);
-        } catch (IOException e) {
-            throw new RuntimeException("파일 삭제 실패: " + path, e);
-        }
-        data.remove(id);
-        save(data);
-
+    try {
+      return Files.readAllBytes(requested);
+    } catch (IOException e) {
+      throw new RuntimeException("파일 읽기 실패: " + fileName, e);
     }
+  }
 
-
-
-
-    public String saveFile(Path sourcePath) {
-        String originFileName = sourcePath.getFileName().toString();
-
-        int dotIndex = originFileName.lastIndexOf(".");
-        String extension = (dotIndex >= 0) ? originFileName.substring(dotIndex).toLowerCase() : "";
-        if (!ALLOWED_EXTENSIONS.contains(extension)) {
-            throw new IllegalArgumentException("허용되지 않는 파일 형식입니다: " + extension);
-        }
-
-        String savedFileName = UUID.randomUUID().toString().replace("-", "") + extension;
-        Path targetPath = uploadPath.resolve(savedFileName).normalize();
-
-        try {
-            Files.copy(sourcePath, targetPath);
-            log.info("파일 저장 완료: {} (원본: {}, 크기: {} bytes)", savedFileName, originFileName, Files.size(sourcePath));
-            return savedFileName;
-        } catch (IOException e) {
-            throw new RuntimeException("파일 저장 실패: " + originFileName, e);
-        }
+  @Override
+  public String getContentType(String fileName) {
+    Path requested = uploadPath.resolve(fileName).normalize();
+    try {
+      String contentType = Files.probeContentType(requested);
+      return (contentType != null) ? contentType : MediaType.APPLICATION_OCTET_STREAM_VALUE;
+    } catch (IOException e) {
+      return MediaType.APPLICATION_OCTET_STREAM_VALUE;
     }
+  }
 
-    @Override
-    public byte[] readFile(String fileName) {
-        Path requested = uploadPath.resolve(fileName).normalize();
-        if (!Files.exists(requested) || Files.isDirectory(requested)) {
-            throw new NoSuchElementException("파일을 찾을 수 없습니다: " + fileName);
-        }
-        try {
-            return Files.readAllBytes(requested);
-        } catch (IOException e) {
-            throw new RuntimeException("파일 읽기 실패: " + fileName, e);
-        }
+  private void save(Map<UUID, BinaryContent> storage) {
+    Path parent = BINARY_PATH.getParent();
+    if (parent != null) {
+      try {
+        Files.createDirectories(parent);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
     }
-
-    @Override
-    public String getContentType(String fileName) {
-        Path requested = uploadPath.resolve(fileName).normalize();
-        try {
-            String contentType = Files.probeContentType(requested);
-            return (contentType != null) ? contentType : MediaType.APPLICATION_OCTET_STREAM_VALUE;
-        } catch (IOException e) {
-            return MediaType.APPLICATION_OCTET_STREAM_VALUE;
-        }
+    try (ObjectOutputStream oos = new ObjectOutputStream(
+        new BufferedOutputStream(Files.newOutputStream(BINARY_PATH)))) {
+      oos.writeObject(new HashMap<>(storage));
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
+  }
 
-    private void save(Map<UUID, BinaryContent> storage) {
-        Path parent = binaryPath.getParent();
-        if (parent != null) {
-            try { Files.createDirectories(parent); }
-            catch (IOException e) { throw new RuntimeException(e); }
-        }
-        try (ObjectOutputStream oos = new ObjectOutputStream(
-                new BufferedOutputStream(Files.newOutputStream(binaryPath)))) {
-            oos.writeObject(new HashMap<>(storage));
-        } catch (IOException e) { throw new RuntimeException(e); }
+  private Map<UUID, BinaryContent> load() {
+      if (!Files.exists(BINARY_PATH)) {
+          return new HashMap<>();
+      }
+    try (ObjectInputStream ois = new ObjectInputStream(
+        new BufferedInputStream(Files.newInputStream(BINARY_PATH)))) {
+      return (Map<UUID, BinaryContent>) ois.readObject();
+    } catch (IOException | ClassNotFoundException e) {
+      throw new RuntimeException(e);
     }
-
-    private Map<UUID, BinaryContent> load() {
-        if (!Files.exists(binaryPath)) return new HashMap<>();
-        try (ObjectInputStream ois = new ObjectInputStream(
-                new BufferedInputStream(Files.newInputStream(binaryPath)))) {
-            return (Map<UUID, BinaryContent>) ois.readObject();
-        } catch (IOException | ClassNotFoundException e) { throw new RuntimeException(e); }
-    }
-
+  }
 
 
 }

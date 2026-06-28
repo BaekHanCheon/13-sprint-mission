@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -10,10 +10,10 @@ import java.util.UUID;
 public interface BinaryContentRepository {
     public void createBinaryContent(BinaryContent binaryContent);
     public Optional<BinaryContent> findBinaryContentById(UUID id);
-    public List<BinaryContent> findAllBinaryContentByIdIn(List<UUID> idList);
+    public Optional<List<BinaryContent>> findAllBinaryContentByIdIn(List<UUID> idList);
     public void deleteBinaryContent(UUID id);
 
-    public String saveFile(Path sourcePath);
+    public String saveFile(MultipartFile file);
 
     public byte[] readFile(String fileName);
 
