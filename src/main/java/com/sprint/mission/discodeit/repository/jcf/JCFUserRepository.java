@@ -15,16 +15,16 @@ public class JCFUserRepository implements UserRepository {
     private final Map<UUID, User> userData = new HashMap<>();
 
     public boolean isExistEmail(String email) {
-        return userData.values().stream().anyMatch(u -> u.getEmail().equals(email));
+        return userData.values().stream().anyMatch(u -> Objects.equals(u.getEmail(), email));
     }
 
     public boolean isExistPhoneNumber(String phoneNumber) {
-        return userData.values().stream().anyMatch(u -> u.getPhoneNumber().equals(phoneNumber));
+        return userData.values().stream().anyMatch(u -> Objects.equals(u.getPhoneNumber(), phoneNumber));
     }
 
     @Override
     public boolean isExistUsername(String username) {
-        return userData.values().stream().anyMatch(u -> u.getPhoneNumber().equals(username));
+        return userData.values().stream().anyMatch(u -> Objects.equals(u.getUserName(), username));
     }
 
     @Override

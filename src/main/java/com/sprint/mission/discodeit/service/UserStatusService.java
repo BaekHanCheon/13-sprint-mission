@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -48,9 +49,9 @@ public class UserStatusService {
     }
 
 
-    public UserStatusResponse updateUserStatus(UserStatusUpdateRequest request){//파라미터값 value만 적용
-        UserStatus userStatus = getUserStatusOrThrow(request.id());
-        userStatus.updateLastOnline(request.lastOnline());
+    public UserStatusResponse updateUserStatus(UUID userStatusId, UserStatusUpdateRequest request){//파라미터값 value만 적용
+        UserStatus userStatus = getUserStatusOrThrow(userStatusId);
+        userStatus.updateLastOnline(request.newLastActiveAt());
         userStatus.updateUserStatus(request.userStatus());
         userStatus.updateUpdatedAt();
 
@@ -58,9 +59,12 @@ public class UserStatusService {
         return UserStatusResponse.from(userStatus);
     }
 
-    public UserStatusResponse updateUserStatusByUserId(UserStatusUpdateRequest request){ //수정 프로퍼티 미정
-        User user = userRepository.findUserById(request.id()).orElseThrow(() -> new NoSuchElementException("유저가 없습니다."));
+    public UserStatusResponse updateUserStatusByUserId(UUID userId, UserStatusUpdateRequest request){ //수정 프로퍼티 미정
+        User user = userRepository.findUserById(userId).orElseThrow(() -> new NoSuchElementException("유저가 없습니다."));
         UserStatus userStatus = getUserStatusOrThrow(user.getUserStatusId());
+        // 프론트엔드가 보내는 마지막 활동 시각으로 온라인 상태를 갱신한다.
+        Instant lastActiveAt = request.newLastActiveAt() != null ? request.newLastActiveAt() : Instant.now();
+        userStatus.updateLastOnline(lastActiveAt);
         userStatus.updateUpdatedAt();
         repository.updateUserStatus(userStatus);
         return UserStatusResponse.from(userStatus);

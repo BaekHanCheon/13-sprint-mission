@@ -1,25 +1,22 @@
 package com.sprint.mission.discodeit.dto.user;
 
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserType;
 
 import java.util.UUID;
 
 public record UserUpdateRequest(
-        UUID id,
-        String password,
-        String userName,
-        String email,
+        String newPassword,
+        String newUsername,
+        String newEmail,
         String phoneNumber,
-        UserType userType,
-        BinaryContentCreateRequest profileImageRequest
+        UserType userType
 ) {
     public User toEntity() {
         return User.builder()
-                .password(password)
-                .userName(userName)
-                .email(email)
+                .password(newPassword)
+                .userName(newUsername)
+                .email(newEmail)
                 .phoneNumber(phoneNumber)
                 .userType(userType)
                 .build();

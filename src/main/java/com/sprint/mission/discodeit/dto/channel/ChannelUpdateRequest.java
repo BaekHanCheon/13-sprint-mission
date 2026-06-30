@@ -7,7 +7,6 @@ import java.lang.reflect.Type;
 import java.util.UUID;
 
 public record ChannelUpdateRequest(
-        UUID id,
         String name,
         String description
 ) { }

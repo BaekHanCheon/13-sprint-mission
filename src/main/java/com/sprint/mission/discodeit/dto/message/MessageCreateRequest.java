@@ -1,17 +1,13 @@
 package com.sprint.mission.discodeit.dto.message;
 
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Message;
 
-import java.util.List;
 import java.util.UUID;
 
 public record MessageCreateRequest(
         String content,
         UUID authorId,
-        UUID channelId,
-        List<BinaryContentCreateRequest> attachments // 첨부파일 여러 개
+        UUID channelId
 ) {
     public Message toEntity() {
         return Message.builder()

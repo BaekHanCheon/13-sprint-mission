@@ -9,26 +9,19 @@ import java.util.UUID;
 
 @Getter
 public abstract class Entity implements Serializable {
-    private final UUID id;
-    private Instant createdAt;
-    private Instant updatedAt;
 
-    public Entity(){
-        this.id = UUID.randomUUID();
-        this.createdAt = Instant.now();
-        this.updatedAt = this.createdAt;
-    }
+  private final UUID id;
+  private Instant createdAt;
+  private Instant updatedAt;
 
-    public void updateUpdatedAt() {
-        this.updatedAt = Instant.now();
-    }
+  public Entity() {
+    this.id = UUID.randomUUID();
+    this.createdAt = Instant.now();
+    this.updatedAt = this.createdAt;
+  }
 
-    @Override
-    public String toString() {
-        return " " +
-                "id=" + id +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +"\n";
-    }
+  public void updateUpdatedAt() {
+    this.updatedAt = Instant.now();
+  }
 
 }

@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.MessageResponse;
 import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
@@ -13,8 +12,8 @@ import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -38,7 +37,7 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public MessageResponse createMessage(MessageCreateRequest request) {
+    public MessageResponse createMessage(MessageCreateRequest request, List<MultipartFile> attachments) {
         Channel channel = getChannelOrThrow(request.channelId());
         User user = getUserOrThrow(request.authorId());
         if (!isAccessable(request, user, channel)) {
@@ -46,8 +45,9 @@ public class BasicMessageService implements MessageService {
         }
         Message message = request.toEntity();
 
-        if (request.attachments() != null && !request.attachments().isEmpty()) {
-            message.updateAttachmentIds(saveAttachment(message, request.attachments()));        } else {
+        if (attachments != null && !attachments.isEmpty()) {
+            message.updateAttachmentIds(saveAttachment(message, attachments));
+        } else {
             log.info("메시지에 첨부파일이 없습니다.");
         }
 
@@ -72,8 +72,8 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public MessageResponse updateMessage(MessageUpdateRequest request) {
-        Message message = getMessageOrThrow(request.id());
+    public MessageResponse updateMessage(UUID messageId, MessageUpdateRequest request) {
+        Message message = getMessageOrThrow(messageId);
 
         message.updateContent(request.content());
 
@@ -126,19 +126,19 @@ public class BasicMessageService implements MessageService {
         return true;
     }
 
-    private List<UUID> saveAttachment(Message message, List<BinaryContentCreateRequest> binaryContentCreateRequests) {
+    private List<UUID> saveAttachment(Message message, List<MultipartFile> attachments) {
         List<UUID> attachmentIds = new ArrayList<>();
 
-        if (binaryContentCreateRequests != null && !binaryContentCreateRequests.isEmpty()) {
-            binaryContentCreateRequests.forEach(request -> {
-                String savedFileName = binaryContentRepository.saveFile(request.filePath());
-                BinaryContent binaryContent = new BinaryContent(savedFileName, message.getAuthorId(), message.getId());
+        attachments.stream()
+                .filter(file -> file != null && !file.isEmpty())
+                .forEach(file -> {
+                    String savedFileName = binaryContentRepository.saveFile(file);
+                    BinaryContent binaryContent = new BinaryContent(savedFileName, message.getAuthorId(), message.getId());
 
-                log.info("파일 {} 저장됨", savedFileName);
-                binaryContentRepository.createBinaryContent(binaryContent);
-                attachmentIds.add(binaryContent.getId());
-            });
-        }
+                    log.info("파일 {} 저장됨", savedFileName);
+                    binaryContentRepository.createBinaryContent(binaryContent);
+                    attachmentIds.add(binaryContent.getId());
+                });
 
         return attachmentIds;
     }

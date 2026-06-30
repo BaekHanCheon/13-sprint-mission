@@ -1,11 +1,7 @@
 package com.sprint.mission.discodeit.dto.binarycontent;
 
-import com.sprint.mission.discodeit.entity.BinaryContent;
-
-import java.net.URL;
-import java.nio.file.Path;
-import java.util.UUID;
+import org.springframework.web.multipart.MultipartFile;
 
 public record BinaryContentCreateRequest(
-        Path filePath
+        MultipartFile file
 ){ }

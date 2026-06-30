@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -12,74 +11,67 @@ import java.util.UUID;
 @Getter
 public class User extends Entity implements Serializable {
 
-    private String password;
-    private String userName;
-    private String email;
-    private String phoneNumber;
-    private UserType userType;
-    private UUID profileId;
-    private UUID userStatusId;
-    private boolean isOnline;
-    private BinaryContentCreateRequest requests;
+  private String password;
+  private String userName;
+  private String email;
+  private String phoneNumber;
+  private UserType userType;
+  private UUID profileId;
+  private UUID userStatusId;
+  private boolean isOnline;
 
-    //생성자
-    @Builder
-    public User(String password, String userName, String email, String phoneNumber, UserType userType, UUID profileId){
-        super();
-        this.password = password;
-        this.userName = userName;
-        this.email = email;
-        this.phoneNumber = phoneNumber;
-        this.userType = userType;
-        this.profileId = profileId;
-    }
+  //생성자
+  @Builder
+  public User(String password, String userName, String email, String phoneNumber, UserType userType,
+      UUID profileId) {
+    super();
+    this.password = password;
+    this.userName = userName;
+    this.email = email;
+    this.phoneNumber = phoneNumber;
+    this.userType = userType;
+    this.profileId = profileId;
+  }
 
-    //getter setter
+  //getter setter
 
 
-    @Override
-    public void updateUpdatedAt() {
-        super.updateUpdatedAt();
-    }
+  @Override
+  public void updateUpdatedAt() {
+    super.updateUpdatedAt();
+  }
 
-    public void updatePassword(String password) {
-        this.password = password;
-    }
+  public void updatePassword(String password) {
+    this.password = password;
+  }
 
-    public void updateUserName(String userName) {
-        this.userName = userName;
-    }
-    public void updateEmail(String email) {
-        this.email = email;
-    }
+  public void updateUserName(String userName) {
+    this.userName = userName;
+  }
 
-    public void updateUserStatusId (UUID userStatusId) {
-        this.userStatusId = userStatusId;
-    }
+  public void updateEmail(String email) {
+    this.email = email;
+  }
 
-    public void updatePhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
+  public void updateUserStatusId(UUID userStatusId) {
+    this.userStatusId = userStatusId;
+  }
 
-    public void updateUserType(UserType userType) {
-        this.userType = userType;
-    }
+  public void updatePhoneNumber(String phoneNumber) {
+    this.phoneNumber = phoneNumber;
+  }
 
-    public void updateProfileId(UUID profileId) {
-        this.profileId = profileId;
-    }
+  public void updateUserType(UserType userType) {
+    this.userType = userType;
+  }
 
-    public void updateOnline(boolean online) {
-        isOnline = online;
-    }
+  public void updateProfileId(UUID profileId) {
+    this.profileId = profileId;
+  }
 
-    @Override
-    public String toString() {
-        return "유저 : " +
-                "password='" + password + '\'' +
-                ", userName='" + userName + '\'' +
-                ", email='" + email + '\'' +
-                super.toString();
-    }
+  public void updateOnline(boolean online) {
+    isOnline = online;
+  }
+
 
 }

@@ -19,9 +19,9 @@ public class AuthService {
         List<User> userList = repository.findAllUser();
 
         User user = repository.findAllUser().stream()
-                .filter(u -> u.getUserName().equals(request.userName()))
+                .filter(u -> u.getUserName().equals(request.username()))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다. username: " + request.userName()));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다. username: " + request.username()));
 
         if (!user.getPassword().equals(request.password())) {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");

@@ -11,24 +11,24 @@ import java.util.UUID;
 
 public record ChannelResponse(
         UUID id,
-        String title,
+        String name,
         String description,
-        ArrayList<UUID> allowedUserList,
+        List<UUID> participantIds,
         ChannelType type,
         Instant createdAt,
         Instant updatedAt,
         Instant lastMessageAt
 ) {
     public static ChannelResponse from(Channel channel, Instant lastMessageAt){
-        List<UUID> allowedUserList = channel.getType() == ChannelType.PRIVATE
-                ? channel.getAllowedUserList()   // PRIVATE이면 유저 목록 포함
-                : Collections.emptyList();
+        List<UUID> participantIds = channel.getType() == ChannelType.PRIVATE
+                ? channel.getAllowedUserList()   // PRIVATE이면 참여자 목록 포함
+                : Collections.emptyList();        // PUBLIC은 전체 공개이므로 빈 목록
 
         return new ChannelResponse(
                 channel.getId(),
                 channel.getName(),
                 channel.getDescription(),
-                channel.getAllowedUserList(),
+                participantIds,
                 channel.getType(),
                 channel.getCreatedAt(),
                 channel.getUpdatedAt(),

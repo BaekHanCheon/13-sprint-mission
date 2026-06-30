@@ -14,70 +14,80 @@ import java.util.*;
 @Repository
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 public class FileUserRepository implements UserRepository {
-    private final static Path binaryPath = Path.of("data/Users.ser");
 
-    public boolean isExistEmail(String email) {
-        return load().values().stream().anyMatch(u -> u.getEmail().equals(email));
-    }
+  private final static Path BINARY_PATH = Path.of("data/Users.ser");
 
-    public boolean isExistPhoneNumber(String phoneNumber) {
-        return load().values().stream().anyMatch(u -> u.getPhoneNumber().equals(phoneNumber));
-    }
+  public boolean isExistEmail(String email) {
+    return load().values().stream().anyMatch(u -> Objects.equals(u.getEmail(), email));
+  }
 
-    @Override
-    public boolean isExistUsername(String username) {
-        return load().values().stream().anyMatch(u -> u.getUserName().equals(username));
-    }
+  public boolean isExistPhoneNumber(String phoneNumber) {
+    return load().values().stream().anyMatch(u -> Objects.equals(u.getPhoneNumber(), phoneNumber));
+  }
 
-    @Override
-    public void createUser(User user) {
-        Map<UUID, User> data = load();
-        data.put(user.getId(), user);
-        save(data);
-    }
+  @Override
+  public boolean isExistUsername(String username) {
+    return load().values().stream().anyMatch(u -> Objects.equals(u.getUserName(), username));
+  }
 
-    @Override
-    public Optional<User> findUserById(UUID id) {
-        User user = load().get(id);
-        return Optional.ofNullable(user);
-    }
+  @Override
+  public void createUser(User user) {
+    Map<UUID, User> data = load();
+    data.put(user.getId(), user);
+    save(data);
+  }
 
-    @Override
-    public List<User> findAllUser() {
-        return load().values().stream().sorted(Comparator.comparing(User::getCreatedAt)).toList();
-    }
+  @Override
+  public Optional<User> findUserById(UUID id) {
+    User user = load().get(id);
+    return Optional.ofNullable(user);
+  }
 
-    @Override
-    public void updateUser(User user) {
-        Map<UUID, User> data = load();
-        data.put(user.getId(), user);
-        save(data);
-    }
+  @Override
+  public List<User> findAllUser() {
+    return load().values().stream().sorted(Comparator.comparing(User::getCreatedAt)).toList();
+  }
 
-    @Override
-    public void deleteUser(UUID id) {
-        Map<UUID, User> data = load();
-        data.remove(id);
-        save(data);
-    }
+  @Override
+  public void updateUser(User user) {
+    Map<UUID, User> data = load();
+    data.put(user.getId(), user);
+    save(data);
+  }
 
-    private void save(Map<UUID, User> storage) {
-        Path parent = binaryPath.getParent();
-        if (parent != null) {
-            try { Files.createDirectories(parent); }
-            catch (IOException e) { throw new RuntimeException(e); }
-        }
-        try (ObjectOutputStream oos = new ObjectOutputStream(
-                new BufferedOutputStream(Files.newOutputStream(binaryPath)))) {
-            oos.writeObject(new HashMap<>(storage));
-        } catch (IOException e) { throw new RuntimeException(e); }
-    }
+  @Override
+  public void deleteUser(UUID id) {
+    Map<UUID, User> data = load();
+    data.remove(id);
+    save(data);
+  }
 
-    private Map<UUID, User> load() {
-        if (!Files.exists(binaryPath)) return new HashMap<>();
-        try (ObjectInputStream ois = new ObjectInputStream(
-                new BufferedInputStream(Files.newInputStream(binaryPath)))) {
-            return (Map<UUID, User>) ois.readObject();
-        } catch (IOException | ClassNotFoundException e) { throw new RuntimeException(e); }
+  private void save(Map<UUID, User> storage) {
+    Path parent = BINARY_PATH.getParent();
+    if (parent != null) {
+      try {
+        Files.createDirectories(parent);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
     }
+    try (ObjectOutputStream oos = new ObjectOutputStream(
+        new BufferedOutputStream(Files.newOutputStream(BINARY_PATH)))) {
+      oos.writeObject(new HashMap<>(storage));
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private Map<UUID, User> load() {
+      if (!Files.exists(BINARY_PATH)) {
+          return new HashMap<>();
+      }
+    try (ObjectInputStream ois = new ObjectInputStream(
+        new BufferedInputStream(Files.newInputStream(BINARY_PATH)))) {
+      return (Map<UUID, User>) ois.readObject();
+    } catch (IOException | ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    }
+  }
 }

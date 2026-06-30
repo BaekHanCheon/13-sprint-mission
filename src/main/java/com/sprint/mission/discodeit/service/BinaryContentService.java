@@ -34,7 +34,7 @@ public class BinaryContentService {
     private final BinaryContentRepository repository;
 
     public BinaryContentResponse createBinaryContent(BinaryContentCreateRequest request) {
-        String savedFileName = repository.saveFile(request.filePath());
+        String savedFileName = repository.saveFile(request.file());
         BinaryContent binaryContent = new BinaryContent(savedFileName, null, null);
 
         repository.createBinaryContent(binaryContent);
@@ -53,7 +53,18 @@ public class BinaryContentService {
     }
 
     public List<BinaryContentResponse> findAllBinaryContent(List<UUID> idList) {
-        return repository.findAllBinaryContentByIdIn(idList).stream().map(BinaryContentResponse::from).toList();
+        List<BinaryContent> binaryContents = repository.findAllBinaryContentByIdIn(idList)
+                .orElseThrow(() -> new NoSuchElementException("BinaryContent not found"));
+
+        return binaryContents.stream()
+                .map(binaryContent -> {
+                    byte[] data = repository.readFile(binaryContent.getFileName());
+                    String contentType = repository.getContentType(binaryContent.getFileName());
+                    String base64 = Base64.getEncoder().encodeToString(data);
+
+                    return BinaryContentResponse.from(binaryContent, contentType, base64);
+                })
+                .toList();
     }
 
     public void deleteBinaryContent(UUID id) {
