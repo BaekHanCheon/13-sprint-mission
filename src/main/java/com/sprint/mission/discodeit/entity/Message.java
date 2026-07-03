@@ -3,17 +3,15 @@ package com.sprint.mission.discodeit.entity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 @Getter
 @AllArgsConstructor
 @Builder
-public class Message extends Entity implements Serializable {
+public class Message extends BaseUpdatableEntity {
 
   private String content;
   private final UUID channelId;

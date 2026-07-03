@@ -3,13 +3,11 @@ package com.sprint.mission.discodeit.entity;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.io.Serializable;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.UUID;
 
 @Getter
-public class Channel extends Entity implements Serializable {
+public class Channel extends BaseUpdatableEntity {
 
   private ChannelType type;
   private String name;
@@ -44,11 +42,6 @@ public class Channel extends Entity implements Serializable {
   }
 
   //getter setter
-
-  @Override
-  public void updateUpdatedAt() {
-    super.updateUpdatedAt();
-  }
 
   public void updateName(String name) {
     this.name = name;

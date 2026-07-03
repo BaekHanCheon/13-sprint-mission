@@ -4,12 +4,10 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 @Getter
-public class User extends Entity implements Serializable {
+public class User extends BaseUpdatableEntity {
 
   private String password;
   private String userName;
@@ -34,12 +32,6 @@ public class User extends Entity implements Serializable {
   }
 
   //getter setter
-
-
-  @Override
-  public void updateUpdatedAt() {
-    super.updateUpdatedAt();
-  }
 
   public void updatePassword(String password) {
     this.password = password;
