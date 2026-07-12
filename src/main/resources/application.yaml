@@ -7,6 +7,7 @@ spring:
     password: discodeit1234
     driver-class-name: org.postgresql.Driver
   jpa:
+    open-in-view: false
     hibernate:
       ddl-auto: create
     properties:
@@ -21,9 +22,10 @@ servlet:
     max-request-size: 20MB
 
 discodeit:
-  repository:
-    type: jcf   # jcf | file
-    file-directory: .discodeit
+  storage:
+    type: local
+    local:
+      root-path: /discodeit
 
 springdoc:
   swagger-ui:

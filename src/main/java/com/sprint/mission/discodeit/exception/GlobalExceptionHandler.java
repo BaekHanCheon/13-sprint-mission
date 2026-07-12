@@ -19,6 +19,12 @@ public class GlobalExceptionHandler {
     return buildProblemDetail(HttpStatus.BAD_REQUEST, e.getMessage());
   }
 
+  @ExceptionHandler(IllegalStateException.class)
+  public ProblemDetail handleIllegalState(IllegalStateException e) {
+    log.warn("잘못된 상태의 요청: {}", e.getMessage());
+    return buildProblemDetail(HttpStatus.BAD_REQUEST, e.getMessage());
+  }
+
   @ExceptionHandler(NoSuchElementException.class)
   public ProblemDetail handleNotFound(NoSuchElementException e) {
     log.warn("자원을 찾을 수 없음: {}", e.getMessage());

@@ -1,68 +1,70 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.dto.message.MessageResponse;
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusResponse;
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusUpdateRequest;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.mapper.ReadStatusMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class ReadStatusService {
-    private final ReadStatusRepository repository;
-    private final UserRepository userRepository;
-    private final ChannelRepository channelRepository;
 
-    public ReadStatusResponse createReadStatus(ReadStatusCreateRequest request){
-        ReadStatus readStatus = request.toEntity();
-        userRepository.findUserById(readStatus.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다. id: " + readStatus.getUserId()));
-        channelRepository.findChannelById(readStatus.getChannelId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다. id: " + readStatus.getChannelId()));
+  private final ReadStatusRepository repository;
+  private final UserRepository userRepository;
+  private final ChannelRepository channelRepository;
+  private final ReadStatusMapper readStatusMapper;
 
-        repository.createReadStatus(readStatus);
-        return ReadStatusResponse.from(readStatus);
-    }
+  @Transactional
+  public ReadStatusResponse createReadStatus(ReadStatusCreateRequest request) {
+    var user = userRepository.findById(request.userId())
+        .orElseThrow(() -> new NoSuchElementException("User not found: " + request.userId()));
+    var channel = channelRepository.findById(request.channelId())
+        .orElseThrow(() -> new NoSuchElementException("Channel not found: " + request.channelId()));
+    ReadStatus readStatus = new ReadStatus(user, channel, request.lastReadAt());
 
-    public ReadStatusResponse findReadStatusById(UUID readStatusId){
-        ReadStatus readStatus = getReadStatusOrThrow(readStatusId);
+    repository.save(readStatus);
+    return readStatusMapper.toDto(readStatus);
+  }
 
-        return ReadStatusResponse.from(readStatus);
-    }
+  @Transactional(readOnly = true)
+  public ReadStatusResponse findReadStatusById(UUID readStatusId) {
+    return readStatusMapper.toDto(getReadStatusOrThrow(readStatusId));
+  }
 
+  @Transactional(readOnly = true)
+  public List<ReadStatusResponse> findAllReadStatusByUserId(UUID userId) {
+    return repository.findAllByUserId(userId).stream()
+        .map(readStatusMapper::toDto)
+        .toList();
+  }
 
-    public List<ReadStatusResponse> findAllReadStatusByUserId(UUID userId){
-        log.info("userId : {}의 readstatus 전체 조회", userId);
-        return repository.findAllReadStatusByUserId(userId).stream().map(ReadStatusResponse::from).toList();
-    }
+  @Transactional
+  public ReadStatusResponse updateReadStatus(UUID readStatusId, ReadStatusUpdateRequest request) {
+    ReadStatus readStatus = getReadStatusOrThrow(readStatusId);
+    readStatus.updateLastReadAt(request.newLastReadAt());
+    repository.save(readStatus);
+    return readStatusMapper.toDto(readStatus);
+  }
 
-    public ReadStatusResponse updateReadStatus(UUID readStatusId, ReadStatusUpdateRequest request){
-        ReadStatus readStatus = getReadStatusOrThrow(readStatusId);
-        readStatus.updateLastReadAt(request.newLastReadAt());
-        readStatus.updateUpdatedAt();
+  @Transactional
+  public void deleteReadStatus(UUID readStatusId) {
+    repository.deleteById(readStatusId);
+  }
 
-        repository.updateReadStatus(readStatus);
-
-        return ReadStatusResponse.from(readStatus);
-    }
-
-    public void deleteReadStatus(UUID readStatusId){
-        repository.deleteReadStatus(readStatusId);
-        System.out.println("readstatus 삭제됨");}
-
-    private ReadStatus getReadStatusOrThrow(UUID id){
-        return repository.findReadStatusById(id).orElseThrow(() -> new NoSuchElementException("해당 ReadStatus가 없습니다."));
-    }
+  private ReadStatus getReadStatusOrThrow(UUID id) {
+    return repository.findById(id)
+        .orElseThrow(() -> new NoSuchElementException("ReadStatus not found: " + id));
+  }
 }

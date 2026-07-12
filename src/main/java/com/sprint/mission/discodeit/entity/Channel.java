@@ -1,21 +1,46 @@
 package com.sprint.mission.discodeit.entity;
 
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import lombok.Builder;
 import lombok.Getter;
-
-import java.util.ArrayList;
-import java.util.UUID;
+import org.hibernate.annotations.BatchSize;
 
 @Getter
+@Entity
+@Table(name = "channel")
 public class Channel extends BaseUpdatableEntity {
 
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
   private ChannelType type;
+
+  @Column(length = 20)
   private String name;
+
+  @Column(length = 20)
   private String description;
 
-  private ArrayList<UUID> allowedUserList = new ArrayList<>(); //사용자
+  private ArrayList<UUID> allowedUserList = new ArrayList<>();
 
-  //생성자
+  @BatchSize(size = 50)
+  @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<Message> messages = new ArrayList<>();
+
+  @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<ReadStatus> readStatuses = new ArrayList<>();
+
+  protected Channel() {
+  }
+
   @Builder(builderMethodName = "publicChannelBuilder")
   public Channel(ChannelType type, String name, String description) {
     super();
@@ -28,20 +53,17 @@ public class Channel extends BaseUpdatableEntity {
   public Channel(ArrayList<UUID> allowedUserList) {
     super();
     this.type = ChannelType.PRIVATE;
-    // 요청 리스트를 그대로 참조하지 않도록 방어적 복사
     this.allowedUserList = allowedUserList != null
         ? new ArrayList<>(allowedUserList) : new ArrayList<>();
   }
 
-  public void addAllowedUserList(UUID uid) { //채널에 허용 userid 정보 등록
+  public void addAllowedUserList(UUID uid) {
     this.allowedUserList.add(uid);
   }
 
-  public void disallowedList(UUID uid) { // 채널에 허용 userid 정보 삭제
+  public void disallowedList(UUID uid) {
     this.allowedUserList.remove(uid);
   }
-
-  //getter setter
 
   public void updateName(String name) {
     this.name = name;
@@ -61,6 +83,5 @@ public class Channel extends BaseUpdatableEntity {
     } else {
       System.out.println("올바른 채널 타입이 아닙니다.");
     }
-
   }
 }

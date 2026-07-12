@@ -8,12 +8,7 @@ import java.util.UUID;
 
 public record ReadStatusCreateRequest(
         UUID channelId,
-        UUID userId
-
-) { public ReadStatus toEntity() {
-    return ReadStatus.builder()
-            .channelId(channelId)
-            .userId(userId)
-            .build();
-    }
+        UUID userId,
+        Instant lastReadAt
+) {
 }
