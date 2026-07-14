@@ -1,30 +1,43 @@
 package com.sprint.mission.discodeit.entity;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 
-import java.io.Serializable;
 import java.time.Instant;
-import java.util.UUID;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Getter
-public class ReadStatus extends Entity implements Serializable {
-    private UUID userId;
-    private UUID channelId;
-    private Instant lastReadAt;
+@Builder
+@Entity
+@Table(name = "read_status")
+@AllArgsConstructor
+public class ReadStatus extends BaseUpdatableEntity {
 
-    @Builder
-    public ReadStatus(UUID userId, UUID channelId) {
-        super();
-        this.userId = userId;
-        this.channelId = channelId;
-        this.lastReadAt = Instant.now();
-    }
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "user_id", nullable = false)
+  @OnDelete(action = OnDeleteAction.CASCADE)
+  private User user;
 
-    public void updateLastReadAt(Instant lastReadAt) {
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "channel_id", nullable = false)
+  @OnDelete(action = OnDeleteAction.CASCADE)
+  private Channel channel;
 
-        this.lastReadAt = lastReadAt;
-    }
+  @Column(nullable = false)
+  private Instant lastReadAt;
+
+  protected ReadStatus() {
+  }
+
+  public void updateLastReadAt(Instant lastReadAt) {
+    this.lastReadAt = lastReadAt;
+  }
 }

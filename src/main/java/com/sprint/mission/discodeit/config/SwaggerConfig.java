@@ -14,7 +14,7 @@ public class SwaggerConfig {
     return new OpenAPI()
         .info(new Info()
             .title("Discodeit API")
-            .description("Discodeit 서비스의 REST API 문서입니다.")
+            .description("Discodeit service REST API documentation.")
             .version("v1.0.0")
             .contact(new Contact()
                 .name("Sprint Mission")
