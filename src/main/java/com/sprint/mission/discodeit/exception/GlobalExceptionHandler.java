@@ -1,17 +1,35 @@
 package com.sprint.mission.discodeit.exception;
 
+import com.sprint.mission.discodeit.dto.error.ErrorResponse;
+import java.time.Instant;
+import java.util.NoSuchElementException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
-import java.time.Instant;
-import java.util.NoSuchElementException;
 
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
+
+  @ExceptionHandler(DiscodeitException.class)
+  public ResponseEntity<ErrorResponse> handleDiscodeitException(DiscodeitException e) {
+    ErrorCode errorCode = e.getErrorCode();
+    log.warn("도메인 예외 발생: code={}, details={}", errorCode, e.getDetails());
+
+    ErrorResponse response = new ErrorResponse(
+        e.getTimeStamp(),
+        errorCode.name(),
+        e.getMessage(),
+        e.getDetails(),
+        e.getClass().getSimpleName(),
+        errorCode.getStatus().value()
+    );
+
+    return ResponseEntity.status(errorCode.getStatus()).body(response);
+  }
 
   @ExceptionHandler(IllegalArgumentException.class)
   public ProblemDetail handleBadRequest(IllegalArgumentException e) {
@@ -35,7 +53,7 @@ public class GlobalExceptionHandler {
   public ProblemDetail handleException(Exception e) {
     log.error("서버 오류", e);
     return buildProblemDetail(HttpStatus.INTERNAL_SERVER_ERROR,
-        "서버에서 문제가 발생했습니다. 잠시 후 다시 시도해주세요.");
+        ErrorCode.INTERNAL_ERROR.getMessage());
   }
 
   private ProblemDetail buildProblemDetail(HttpStatus status, String detail) {

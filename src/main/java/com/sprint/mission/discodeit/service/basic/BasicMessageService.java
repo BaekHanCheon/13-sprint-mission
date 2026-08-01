@@ -5,6 +5,11 @@ import com.sprint.mission.discodeit.dto.message.MessageResponse;
 import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentStorageException;
+import com.sprint.mission.discodeit.exception.channel.ChannelAccessDeniedException;
+import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -25,7 +30,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @Slf4j
@@ -45,7 +49,7 @@ public class BasicMessageService implements MessageService {
     if (channel.getType() == ChannelType.PRIVATE) {
 
       Channel repoChannel = channelRepository.findById(channel.getId())
-          .orElseThrow(() -> new NoSuchElementException("해당 채널이 없습니다."));
+          .orElseThrow(() -> new ChannelNotFoundException(channel.getId()));
       return repoChannel.getAllowedUserList().contains(request.authorId());
     }
     return true;
@@ -55,10 +59,13 @@ public class BasicMessageService implements MessageService {
   @Transactional
   public MessageResponse createMessage(MessageCreateRequest request,
       List<MultipartFile> attachments) {
+    int attachmentCount = attachments == null ? 0 : attachments.size();
+    log.info("메시지 생성 시작: channelId={}, authorId={}, attachmentCount={}",
+        request.channelId(), request.authorId(), attachmentCount);
     Channel channel = getChannelOrThrow(request.channelId());
     User user = getUserOrThrow(request.authorId());
     if (!isAccessable(request, user, channel)) {
-      return null;
+      throw new ChannelAccessDeniedException(channel.getId(), user.getId());
     }
     Message message = request.toEntity(user, channel);
 
@@ -87,6 +94,7 @@ public class BasicMessageService implements MessageService {
   public PageResponse<MessageResponse> findAllMessageByChannelId(
       UUID channelId, Instant cursor, org.springframework.data.domain.Pageable pageable) {
     System.out.println("메세지 전체조회 -");
+    getChannelOrThrow(channelId);
 
     var cursorPageable = PageRequest.of(
         0,
@@ -111,6 +119,7 @@ public class BasicMessageService implements MessageService {
   @Override
   @Transactional
   public MessageResponse updateMessage(UUID messageId, MessageUpdateRequest request) {
+    log.info("메시지 수정 시작: messageId={}", messageId);
     Message message = getMessageOrThrow(messageId);
 
     message.updateContent(request.newContent());
@@ -124,6 +133,7 @@ public class BasicMessageService implements MessageService {
   @Override
   @Transactional
   public void deleteMessage(UUID id) {
+    log.info("메시지 삭제 시작: messageId={}", id);
     Message message = getMessageOrThrow(id);
     if (message.getAttachment() != null && !message.getAttachment().isEmpty()) {
       List<BinaryContent> attachments = message.getAttachment();
@@ -131,22 +141,22 @@ public class BasicMessageService implements MessageService {
       log.info("첨부파일 삭제");
     }
     repository.deleteById(id);
-    System.out.println("메세지 삭제됨");
+    log.info("메시지 삭제 완료: messageId={}", id);
   }
 
   private Message getMessageOrThrow(UUID messageId) {
     return repository.findById(messageId)
-        .orElseThrow(() -> new NoSuchElementException("해당 메세지가 없습니다."));
+        .orElseThrow(() -> new MessageNotFoundException(messageId));
   }
 
   private Channel getChannelOrThrow(UUID channelId) {
     return channelRepository.findById(channelId)
-        .orElseThrow(() -> new NoSuchElementException("해당 채널이 없습니다."));
+        .orElseThrow(() -> new ChannelNotFoundException(channelId));
   }
 
   private User getUserOrThrow(UUID userId) {
     return userRepository.findById(userId)
-        .orElseThrow(() -> new NoSuchElementException("해당 유저가 없습니다."));
+        .orElseThrow(() -> new UserNotFoundException("userId", userId));
   }
 
   private boolean isAccessable(MessageCreateRequest request, User user, Channel channel) {
@@ -189,16 +199,20 @@ public class BasicMessageService implements MessageService {
     );
 
     BinaryContent savedBinaryContent = binaryContentRepository.save(binaryContent);
+    log.info("파일 업로드 시작: binaryContentId={}, messageId={}, size={}, contentType={}",
+        savedBinaryContent.getId(), message.getId(), size, contentType);
 
     try {
       byte[] bytes = file.getBytes();
       binaryContentStorage.put(savedBinaryContent.getId(), bytes);
     } catch (IOException e) {
-      throw new RuntimeException("파일 저장 중 오류가 발생했습니다.", e);
+      throw new BinaryContentStorageException(savedFileName, e);
     }
 
     log.info("파일 {} 저장됨", savedFileName);
 
+    log.info("파일 업로드 완료: binaryContentId={}, messageId={}",
+        savedBinaryContent.getId(), message.getId());
     return savedBinaryContent;
   }
 }

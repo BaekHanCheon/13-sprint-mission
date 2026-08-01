@@ -14,12 +14,13 @@ spring:
       hibernate:
         format_sql: true
         highlight_sql: true
-
-servlet:
-  multipart:
-    enabled: true
-    max-file-size: 5MB
-    max-request-size: 20MB
+  profiles:
+    active: prod
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 5MB
+      max-request-size: 20MB
 
 discodeit:
   storage:
@@ -38,8 +39,8 @@ springdoc:
 
 logging:
   level:
-    com.discodeit: debug
-    org.hibernate.SQL: debug
+    com.discodeit: info
+    org.hibernate.SQL: info
     org.hibernate.orm.jdbc.bind: trace
 
 server:

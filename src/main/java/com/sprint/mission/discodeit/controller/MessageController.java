@@ -10,6 +10,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/api/messages")
 @RequiredArgsConstructor
+@Slf4j
 public class MessageController implements MessageApi {
 
   private final MessageService messageService;
@@ -38,8 +40,15 @@ public class MessageController implements MessageApi {
   public ResponseEntity<MessageResponse> createMessage(
       @RequestPart("messageCreateRequest") MessageCreateRequest request,
       @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments) {
-    return ResponseEntity.status(HttpStatus.CREATED)
-        .body(messageService.createMessage(request, attachments));
+    int attachmentCount = attachments == null ? 0 : attachments.size();
+    log.debug("메시지 생성 요청: channelId={}, authorId={}, attachmentCount={}",
+        request.channelId(), request.authorId(), attachmentCount);
+
+    MessageResponse response = messageService.createMessage(request, attachments);
+
+    log.info("메시지 생성 응답: messageId={}", response == null ? null : response.id());
+
+    return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
   @Override
@@ -47,14 +56,20 @@ public class MessageController implements MessageApi {
   public ResponseEntity<MessageResponse> updateMessage(
       @PathVariable UUID messageId,
       @RequestBody MessageUpdateRequest request) {
-    return ResponseEntity.status(HttpStatus.OK)
-        .body(messageService.updateMessage(messageId, request));
+    log.debug("메시지 수정 요청: messageId={}", messageId);
+    MessageResponse response = messageService.updateMessage(messageId, request);
+
+    log.info("메시지 수정 응답: messageId={}", messageId);
+    return ResponseEntity.ok(response);
   }
 
   @Override
   @DeleteMapping("/{messageId}")
   public ResponseEntity<Void> deleteMessage(@PathVariable UUID messageId) {
+    log.debug("메시지 삭제 요청: messageId={}", messageId);
     messageService.deleteMessage(messageId);
+
+    log.info("메시지 삭제 응답: messageId={}", messageId);
     return ResponseEntity.noContent().build();
   }
 

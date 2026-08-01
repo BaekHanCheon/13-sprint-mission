@@ -18,7 +18,7 @@ import lombok.AllArgsConstructor;
 @Builder
 @AllArgsConstructor
 @Entity
-@Table(name = "user")
+@Table(name = "users")
 public class User extends BaseUpdatableEntity {
 
   @Column(nullable = false, length = 60)
@@ -30,7 +30,7 @@ public class User extends BaseUpdatableEntity {
   @Column(nullable = false, length = 100, unique = true)
   private String email;
 
-  @Column(nullable = false, length = 30, unique = true)
+  @Column(length = 30, unique = true)
   private String phoneNumber;
 
   @Enumerated(EnumType.STRING)

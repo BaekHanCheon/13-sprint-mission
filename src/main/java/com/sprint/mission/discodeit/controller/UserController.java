@@ -11,6 +11,7 @@ import com.sprint.mission.discodeit.service.UserStatusService;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
+@Slf4j
 public class UserController implements UserApi {
 
   private final UserService userService;
@@ -38,7 +40,13 @@ public class UserController implements UserApi {
   public ResponseEntity<UserResponse> createUser(
       @RequestPart("userCreateRequest") UserCreateRequest request,
       @RequestPart(value = "profile", required = false) MultipartFile profile) {
-    return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(request, profile));
+
+    log.debug("사용자 생성 요청: username={}, profileAttached={}",
+        request.username(), profile != null && !profile.isEmpty());
+    UserResponse response = userService.createUser(request, profile);
+
+    log.info("사용자 생성 응답: userId={}", response.id());
+    return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
   @Override
@@ -47,14 +55,23 @@ public class UserController implements UserApi {
       @PathVariable UUID userId,
       @RequestPart("userUpdateRequest") UserUpdateRequest request,
       @RequestPart(value = "profile", required = false) MultipartFile profile) {
-    return ResponseEntity.status(HttpStatus.OK)
-        .body(userService.updateUser(userId, request, profile));
+
+    log.debug("사용자 수정 요청: userId={}, profileAttached={}",
+        userId, profile != null && !profile.isEmpty());
+    UserResponse response = userService.updateUser(userId, request, profile);
+
+    log.info("사용자 수정 응답: userId={}", userId);
+    return ResponseEntity.ok(response);
   }
 
   @Override
   @DeleteMapping("/{userId}")
   public ResponseEntity<Void> deleteUser(@PathVariable UUID userId) {
+
+    log.debug("사용자 삭제 요청: userId={}", userId);
     userService.deleteUser(userId);
+
+    log.info("사용자 삭제 응답: userId={}", userId);
     return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 

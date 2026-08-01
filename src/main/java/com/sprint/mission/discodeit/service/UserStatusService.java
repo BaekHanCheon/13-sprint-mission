@@ -5,6 +5,8 @@ import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponse;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.exception.userstatus.UserStatusNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserStatusMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -14,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +31,7 @@ public class UserStatusService {
   @Transactional
   public UserStatusResponse createUserStatus(UserStatusCreateRequest request) {
     User user = userRepository.findById(request.userId())
-        .orElseThrow(() -> new NoSuchElementException("User not found: " + request.userId()));
+        .orElseThrow(() -> new UserNotFoundException("userId", request.userId()));
     UserStatus userStatus = request.toEntity(user);
     /*
     userRepository.findUserById(userStatus.getUser().getId())
@@ -72,7 +73,7 @@ public class UserStatusService {
   public UserStatusResponse updateUserStatusByUserId(UUID userId,
       UserStatusUpdateRequest request) { //수정 프로퍼티 미정
     User user = userRepository.findById(userId)
-        .orElseThrow(() -> new NoSuchElementException("유저가 없습니다."));
+        .orElseThrow(() -> new UserNotFoundException("userId", userId));
     UserStatus userStatus = getUserStatusOrThrow(user.getUserStatus().getId());
     // 프론트엔드가 보내는 마지막 활동 시각으로 온라인 상태를 갱신한다.
     Instant lastActiveAt =
@@ -84,13 +85,14 @@ public class UserStatusService {
 
   @Transactional
   public void deleteUserStatus(UUID userStatusId) {
+    getUserStatusOrThrow(userStatusId);
     repository.deleteById(userStatusId);
     System.out.println("userstatus 삭제됨");
   }
 
   private UserStatus getUserStatusOrThrow(UUID id) {
     return repository.findById(id)
-        .orElseThrow(() -> new NoSuchElementException("해당 UserStatus가 없습니다."));
+        .orElseThrow(() -> new UserStatusNotFoundException(id));
   }
 
 }
