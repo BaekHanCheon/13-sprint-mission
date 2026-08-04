@@ -6,6 +6,10 @@ import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentStorageException;
+import com.sprint.mission.discodeit.exception.user.UserAlreadyExistsException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.exception.userstatus.UserStatusNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -20,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -39,6 +42,8 @@ public class BasicUserService implements UserService {
   @Override
   @Transactional
   public UserResponse createUser(UserCreateRequest request, MultipartFile profile) {
+    log.info("사용자 생성 시작: username={}, profileAttached={}",
+        request.username(), profile != null && !profile.isEmpty());
 
     String userName = request.username();
     String email = request.email();
@@ -55,14 +60,16 @@ public class BasicUserService implements UserService {
       String contentType = profile.getContentType();
 
       BinaryContent binaryContent = new BinaryContent(savedFileName, size, contentType, user, null);
-      binaryContentRepository.save(binaryContent);
       user.updateProfile(binaryContent);
+      log.info("프로필 파일 업로드 시작: binaryContentId={}, size={}, contentType={}",
+          binaryContent.getId(), size, contentType);
 
       try {
         byte[] bytes = profile.getBytes();
         binaryContentStorage.put(binaryContent.getId(), bytes);
+        log.info("프로필 파일 업로드 완료: binaryContentId={}", binaryContent.getId());
       } catch (IOException e) {
-        throw new RuntimeException(e);
+        throw new BinaryContentStorageException(savedFileName, e);
       }
     } else {
       log.info("유저 프로필에 첨부파일이 없습니다.");
@@ -71,7 +78,6 @@ public class BasicUserService implements UserService {
     //userStatus 생성
     UserStatus userStatus = new UserStatus(user);
     user.updateStatus(userStatus);
-    userStatusRepository.save(userStatus);
 
     // 회원가입 직후 바로 로그인 상태가 되도록 온라인으로 설정 (로그인 흐름과 동일)
     user.updateOnline(true);
@@ -86,7 +92,7 @@ public class BasicUserService implements UserService {
   public UserResponse findUserById(UUID userId) {
     User user = getUserOrThrow(userId);
     UserStatus userStatus = userStatusRepository.findById(user.getUserStatus().getId())
-        .orElseThrow(() -> new NoSuchElementException("존재하지 않는 userStatus"));
+        .orElseThrow(() -> new UserStatusNotFoundException(user.getUserStatus().getId()));
     user.updateOnline(userStatus.isOnline());
     log.info("유저 조회 - {}", user.getUsername());
     return userMapper.toDto(user);
@@ -103,6 +109,8 @@ public class BasicUserService implements UserService {
   @Override
   @Transactional
   public UserResponse updateUser(UUID userId, UserUpdateRequest request, MultipartFile profile) {
+    log.info("사용자 수정 시작: userId={}, profileAttached={}",
+        userId, profile != null && !profile.isEmpty());
 
     User userToUpdate = getUserOrThrow(userId);
 
@@ -135,12 +143,16 @@ public class BasicUserService implements UserService {
           userToUpdate, null);
       binaryContentRepository.save(binaryContent);
       userToUpdate.updateProfile(binaryContent);
+      log.info("프로필 파일 업로드 시작: binaryContentId={}, userId={}, size={}, contentType={}",
+          binaryContent.getId(), userId, size, contentType);
 
       try {
         byte[] bytes = profile.getBytes();
         binaryContentStorage.put(binaryContent.getId(), bytes);
+        log.info("프로필 파일 업로드 완료: binaryContentId={}, userId={}",
+            binaryContent.getId(), userId);
       } catch (IOException e) {
-        throw new RuntimeException(e);
+        throw new BinaryContentStorageException(savedFileName, e);
       }
     } else {
       log.info("유저 프로필에 첨부파일이 없습니다.");
@@ -155,33 +167,34 @@ public class BasicUserService implements UserService {
   @Override
   @Transactional
   public void deleteUser(UUID userid) {
+    log.info("사용자 삭제 시작: userId={}", userid);
     User user = getUserOrThrow(userid);
     userStatusRepository.deleteById(user.getUserStatus().getId());
-    if (user.getProfile().getId() != null) {
+    if (user.getProfile() != null && user.getProfile().getId() != null) {
       binaryContentRepository.deleteById(user.getProfile().getId());
     }
     repository.deleteById(userid);
 
-    System.out.println("유저 삭제");
+    log.info("사용자 삭제 완료: userId={}", userid);
   }
 
 
   private User getUserOrThrow(UUID id) {
     return repository.findById(id)
-        .orElseThrow(() -> new NoSuchElementException("해당 유저가 없습니다."));
+        .orElseThrow(() -> new UserNotFoundException("userId", id));
   }
 
   private void validateDuplicateUser(String userName, String email, String phoneNumber) {
     if (email != null && repository.existsByEmail(email)) {
-      throw new IllegalArgumentException("이미 사용중인 이메일입니다.");
+      throw new UserAlreadyExistsException("email", email);
     }
     // 전화번호는 선택 입력값이므로, 값이 있을 때만 중복 검사한다.
     if (phoneNumber != null && !phoneNumber.isBlank() && repository.existsByPhoneNumber(
         phoneNumber)) {
-      throw new IllegalArgumentException("이미 사용중인 전화번호입니다.");
+      throw new UserAlreadyExistsException("phoneNumber", phoneNumber);
     }
     if (userName != null && repository.existsByUsername(userName)) {
-      throw new IllegalArgumentException("이미 사용중인 유저네임입니다.");
+      throw new UserAlreadyExistsException("username", userName);
     }
   }
 
@@ -191,14 +204,14 @@ public class BasicUserService implements UserService {
         .filter(user -> !user.getId().equals(currentUserId))
         .forEach(user -> {
           if (email != null && Objects.equals(user.getEmail(), email)) {
-            throw new IllegalArgumentException("이미 사용중인 이메일입니다.");
+            throw new UserAlreadyExistsException("email", email);
           }
           if (phoneNumber != null && !phoneNumber.isBlank()
               && Objects.equals(user.getPhoneNumber(), phoneNumber)) {
-            throw new IllegalArgumentException("이미 사용중인 전화번호입니다.");
+            throw new UserAlreadyExistsException("phoneNumber", phoneNumber);
           }
           if (userName != null && Objects.equals(user.getUsername(), userName)) {
-            throw new IllegalArgumentException("이미 사용중인 유저네임입니다.");
+            throw new UserAlreadyExistsException("username", userName);
           }
         });
   }

@@ -4,12 +4,14 @@ import com.sprint.mission.discodeit.dto.readstatus.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusResponse;
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.readstatus.ReadStatusNotFoundException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.ReadStatusMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,9 +31,9 @@ public class ReadStatusService {
   @Transactional
   public ReadStatusResponse createReadStatus(ReadStatusCreateRequest request) {
     var user = userRepository.findById(request.userId())
-        .orElseThrow(() -> new NoSuchElementException("User not found: " + request.userId()));
+        .orElseThrow(() -> new UserNotFoundException("userId", request.userId()));
     var channel = channelRepository.findById(request.channelId())
-        .orElseThrow(() -> new NoSuchElementException("Channel not found: " + request.channelId()));
+        .orElseThrow(() -> new ChannelNotFoundException(request.channelId()));
     ReadStatus readStatus = new ReadStatus(user, channel, request.lastReadAt());
 
     repository.save(readStatus);
@@ -45,6 +47,9 @@ public class ReadStatusService {
 
   @Transactional(readOnly = true)
   public List<ReadStatusResponse> findAllReadStatusByUserId(UUID userId) {
+    userRepository.findById(userId)
+        .orElseThrow(() -> new UserNotFoundException("userId", userId));
+
     return repository.findAllByUserId(userId).stream()
         .map(readStatusMapper::toDto)
         .toList();
@@ -60,11 +65,12 @@ public class ReadStatusService {
 
   @Transactional
   public void deleteReadStatus(UUID readStatusId) {
+    getReadStatusOrThrow(readStatusId);
     repository.deleteById(readStatusId);
   }
 
   private ReadStatus getReadStatusOrThrow(UUID id) {
     return repository.findById(id)
-        .orElseThrow(() -> new NoSuchElementException("ReadStatus not found: " + id));
+        .orElseThrow(() -> new ReadStatusNotFoundException(id));
   }
 }

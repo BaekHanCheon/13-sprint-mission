@@ -14,12 +14,13 @@ spring:
       hibernate:
         format_sql: true
         highlight_sql: true
-
-servlet:
-  multipart:
-    enabled: true
-    max-file-size: 5MB
-    max-request-size: 20MB
+  profiles:
+    active: dev
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 5MB
+      max-request-size: 20MB
 
 discodeit:
   storage:
@@ -38,9 +39,37 @@ springdoc:
 
 logging:
   level:
-    com.discodeit: debug
-    org.hibernate.SQL: debug
+    com.discodeit: info
+    org.hibernate.SQL: info
     org.hibernate.orm.jdbc.bind: trace
 
 server:
   port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,loggers
+  info:
+    env:
+      enabled: true
+
+info:
+  app:
+    name: Discodeit
+    version: 1.7.0
+    java-version: 17
+    spring-boot-version: 3.4.0
+  configuration:
+    datasource:
+      url: ${spring.datasource.url}
+      driver-class-name: ${spring.datasource.driver-class-name}
+    jpa:
+      ddl-auto: ${spring.jpa.hibernate.ddl-auto}
+    storage:
+      type: ${discodeit.storage.type}
+      path: ${discodeit.storage.local.root-path}
+    multipart:
+      max-file-size: ${spring.servlet.multipart.max-file-size}
+      max-request-size: ${spring.servlet.multipart.max-request-size}
