@@ -13,22 +13,7 @@ spring:
       keepalive-time: 300000 # 5분 / 풀 안에서 놀고있는(유휴)커넥션에게 주기적으로 health check를 보내는 간격
   jpa:
     hibernate:
-      ddl-auto: ${JPA_DDL_AUTO:create}
-
-sprintlog:
-  welcome-message: "SprintLog Boot - PRODUCTION (운영 환경)"
-  sample-data:
-    enabled: false
-    count: 4
-  file-directory: ${SPRINTLOG_FILE_DIRECTORY:/app/uploads} #컨테이너 안 경로 (호스트 절대경로 대신)
-
-  storage: ${SPRINTLOG_STORAGE:s3}  # s3, local
-  s3:
-    bucket: ${SPRINTLOG_S3_BUCKET:discodeit-uploads}
-    region: ${AWS_REGION:ap-northeast-2}
-    endpoint: ${SPRINTLOG_S3_ENDPOINT:}
-    presign-minutes: ${SPRINTLOG_S3_PRISIGN_MINUTES:5}
-
+      ddl-auto: ${JPA_DDL_AUTO:validate}
 
 logging:
   level:
