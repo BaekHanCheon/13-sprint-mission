@@ -58,7 +58,7 @@ class ChannelControllerTest {
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.id").value(channelId.toString()))
         .andExpect(jsonPath("$.type").value("PUBLIC"))
-        .andExpect(jsonPath("$.name").value("general"));
+        .andExpect(jsonPath("$.name").value("공개채널"));
   }
 
   @Test

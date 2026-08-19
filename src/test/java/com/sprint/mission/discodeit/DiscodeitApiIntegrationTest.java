@@ -52,7 +52,7 @@ class DiscodeitApiIntegrationTest {
     mvc.perform(multipart("/api/messages")
             .file(제이슨_파트_생성("messageCreateRequest", messageRequest)))
         .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.content").value("hello"));
+        .andExpect(jsonPath("$.content").value("안녕하세요"));
 
     mvc.perform(get("/actuator/info"))
         .andExpect(status().isOk())
