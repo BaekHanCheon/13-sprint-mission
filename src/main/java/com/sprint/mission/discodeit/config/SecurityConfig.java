@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -26,6 +27,7 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
@@ -39,10 +41,12 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http,
       AuthenticationSuccessHandler loginSuccessHandler,
+      AuthenticationFailureHandler loginFailureHandler,
       AuthenticationEntryPoint restAuthenticationEntryPoint,
       AccessDeniedHandler restAccessDeniedHandler,
       SessionRegistry sessionRegistry,
-      UserDetailsService userDetailsService
+      UserDetailsService userDetailsService,
+      @Value("${discodeit.security.remember-me.key}") String rememberMeKey
   ) throws Exception {
 
     http
@@ -54,11 +58,13 @@ public class SecurityConfig {
         .formLogin(form -> form
             .loginProcessingUrl("/api/auth/login") // 폼이 POST 처리되는 URL(Spring이 가로챔)
             .successHandler(loginSuccessHandler)
+            .failureHandler(loginFailureHandler)
             .permitAll() // 로그인 요청은 누구나 접근 가능
         )
 
         .rememberMe(rememberMe -> rememberMe
             .rememberMeParameter("remember-me")
+            .key(rememberMeKey)
             .userDetailsService(userDetailsService)
         )
 

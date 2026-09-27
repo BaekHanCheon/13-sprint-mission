@@ -17,6 +17,13 @@ spring:
       max-request-size: 20MB
 
 discodeit:
+  admin:
+    username: test-admin
+    email: test-admin@example.com
+    password: test-admin-password
+  security:
+    remember-me:
+      key: test-remember-me-key-for-integration-tests
   storage:
     type: s3
     local:

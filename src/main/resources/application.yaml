@@ -25,6 +25,13 @@ spring:
       max-request-size: 20MB
 
 discodeit:
+  admin:
+    username: ${ADMIN_USERNAME}
+    email: ${ADMIN_EMAIL}
+    password: ${ADMIN_PASSWORD}
+  security:
+    remember-me:
+      key: ${REMEMBER_ME_KEY}
   storage:
     type: ${STORAGE_TYPE:local}
     local:

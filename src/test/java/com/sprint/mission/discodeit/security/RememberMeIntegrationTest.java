@@ -6,6 +6,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -29,6 +30,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -42,7 +44,7 @@ import org.springframework.test.web.servlet.MvcResult;
         classes = GlobalExceptionHandler.class
     )
 )
-@Import({SecurityConfig.class, DiscodeitUserDetailsService.class})
+@Import({SecurityConfig.class, DiscodeitUserDetailsService.class, LoginFailureHandler.class})
 class RememberMeIntegrationTest {
 
   @Autowired
@@ -103,5 +105,17 @@ class RememberMeIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(authenticated().withUsername("admin"))
         .andExpect(jsonPath("$.username").value("admin"));
+  }
+
+  @Test
+  @DisplayName("로그인에 실패하면 401 ProblemDetail을 반환한다")
+  void loginFailureReturnsUnauthorizedProblemDetail() throws Exception {
+    mvc.perform(post("/api/auth/login")
+            .with(csrf())
+            .param("username", "admin")
+            .param("password", "wrong-password"))
+        .andExpect(status().isUnauthorized())
+        .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
+        .andExpect(jsonPath("$.code").value("AUTH_401"));
   }
 }

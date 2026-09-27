@@ -21,5 +21,5 @@ public interface UserService {
 
   void deleteUser(UUID id);
 
-  UserResponse changeRole(UUID userid, Role role);
+  UserResponse changeRole(UUID userId, Role role);
 }

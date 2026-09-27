@@ -44,7 +44,7 @@ public class AuthController {
   @PostMapping("/role")
   @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<UserResponse> changeRole(@Valid @RequestBody RoleUpdateRequest request) {
-    return ResponseEntity.ok().body(userService.changeRole(request.userid(), request.newRole()));
+    return ResponseEntity.ok().body(userService.changeRole(request.userId(), request.newRole()));
 
   }
 }

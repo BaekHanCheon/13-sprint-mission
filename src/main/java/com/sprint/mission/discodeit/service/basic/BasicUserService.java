@@ -174,9 +174,9 @@ public class BasicUserService implements UserService {
   }
 
   @Override
-  public UserResponse changeRole(UUID userid, Role role) {
+  public UserResponse changeRole(UUID userId, Role role) {
 
-    User user = getUserOrThrow(userid);
+    User user = getUserOrThrow(userId);
     user.updateRole(role);
     repository.save(user);
 
