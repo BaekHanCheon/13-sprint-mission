@@ -71,6 +71,8 @@ class MethodSecurityOwnershipTest {
   private PageResponseMapper pageResponseMapper;
   @MockitoBean
   private PasswordEncoder passwordEncoder;
+  @MockitoBean
+  private JwtRegistry jwtRegistry;
 
   private UUID currentUserId;
 

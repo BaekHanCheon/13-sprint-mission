@@ -30,8 +30,12 @@ discodeit:
     email: ${ADMIN_EMAIL}
     password: ${ADMIN_PASSWORD}
   security:
-    remember-me:
-      key: ${REMEMBER_ME_KEY}
+    jwt:
+      issuer: discodeit
+      secret: ${JWT_SECRET:discodeit-local-jwt-secret-change-me-1234}
+      access-token-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION:30m}
+      refresh-token-expiration: ${JWT_REFRESH_TOKEN_EXPIRATION:7d}
+      max-active-jwt-count: 1
   storage:
     type: ${STORAGE_TYPE:local}
     local:
