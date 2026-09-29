@@ -15,7 +15,10 @@ import com.sprint.mission.discodeit.exception.user.UserAlreadyExistsException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.security.JwtRegistry;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,6 +41,8 @@ class BasicUserServiceTest {
   UserMapper mapper;
   @Mock
   PasswordEncoder passwordEncoder;
+  @Mock
+  JwtRegistry jwtRegistry;
   @InjectMocks
   BasicUserService service;
 
@@ -66,5 +71,25 @@ class BasicUserServiceTest {
     assertThatThrownBy(() -> service.createUser(request, null))
         .isInstanceOf(UserAlreadyExistsException.class);
     then(repository).should(never()).save(any());
+  }
+
+  @Test
+  @DisplayName("권한을 변경하면 사용자의 JWT를 모두 무효화한다")
+  void invalidateJwtWhenRoleChanges() {
+    UUID userId = UUID.randomUUID();
+    User user = User.builder()
+        .username("user")
+        .email("user@example.com")
+        .password("password")
+        .role(Role.USER)
+        .build();
+    UserResponse response = new UserResponse(
+        userId, "user", "user@example.com", null, false, Role.ADMIN);
+    given(repository.findById(userId)).willReturn(Optional.of(user));
+    given(mapper.toDto(user)).willReturn(response);
+
+    service.changeRole(userId, Role.ADMIN);
+
+    then(jwtRegistry).should().invalidateJwtInformationByUserId(userId);
   }
 }

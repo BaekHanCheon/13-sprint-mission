@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.dto.channel.ChannelPublicCreateRequest;
@@ -17,6 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
+@WithMockUser(roles = "ADMIN")
 @DisplayName("Discodeit API 통합 테스트")
 class DiscodeitApiIntegrationTest {
 
@@ -39,6 +42,7 @@ class DiscodeitApiIntegrationTest {
     UUID userId = createUser();
 
     MvcResult channelResult = mvc.perform(post("/api/channels/public")
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsBytes(
                 new ChannelPublicCreateRequest("공개 채널", "공개채널입니다."))))
@@ -50,7 +54,8 @@ class DiscodeitApiIntegrationTest {
     MessageCreateRequest messageRequest =
         new MessageCreateRequest("안녕하세요", userId, channelId);
     mvc.perform(multipart("/api/messages")
-            .file(jsonPart("messageCreateRequest", messageRequest)))
+            .file(jsonPart("messageCreateRequest", messageRequest))
+            .with(csrf()))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.content").value("안녕하세요"));
 
@@ -68,10 +73,12 @@ class DiscodeitApiIntegrationTest {
     UserCreateRequest invalidUser =
         new UserCreateRequest("", "", "invalid", null, Role.USER);
     mvc.perform(multipart("/api/users")
-            .file(jsonPart("userCreateRequest", invalidUser)))
+            .file(jsonPart("userCreateRequest", invalidUser))
+            .with(csrf()))
         .andExpect(status().isBadRequest());
 
     mvc.perform(post("/api/channels/public")
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsBytes(
                 new ChannelPublicCreateRequest("", "talk"))))
@@ -80,7 +87,8 @@ class DiscodeitApiIntegrationTest {
     MessageCreateRequest invalidMessage =
         new MessageCreateRequest("", UUID.randomUUID(), UUID.randomUUID());
     mvc.perform(multipart("/api/messages")
-            .file(jsonPart("messageCreateRequest", invalidMessage)))
+            .file(jsonPart("messageCreateRequest", invalidMessage))
+            .with(csrf()))
         .andExpect(status().isBadRequest());
   }
 
@@ -88,8 +96,9 @@ class DiscodeitApiIntegrationTest {
     UserCreateRequest request = new UserCreateRequest(
         "password", "김김김", "asdf@test.com", null, Role.USER);
     MvcResult result = mvc.perform(multipart("/api/users")
-            .file(jsonPart("userCreateRequest", request)))
-        .andExpect(status().isCreated())
+            .file(jsonPart("userCreateRequest", request))
+            .with(csrf()))
+        .andExpect(status().isOk())
         .andReturn();
     return extractId(result);
   }

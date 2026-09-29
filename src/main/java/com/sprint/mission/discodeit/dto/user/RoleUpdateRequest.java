@@ -1,11 +1,12 @@
 package com.sprint.mission.discodeit.dto.user;
 
 import com.sprint.mission.discodeit.entity.Role;
+import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
 public record RoleUpdateRequest(
-    UUID userid,
-    Role newRole
+    @NotNull(message = "사용자 ID는 필수입니다.") UUID userId,
+    @NotNull(message = "변경할 역할은 필수입니다.") Role newRole
 ) {
 
 }
