@@ -101,7 +101,7 @@ public class InMemoryJwtRegistry implements JwtRegistry {
     return rotated[0];
   }
 
-  @Scheduled(fixedDelay = 1000 * 60 * 5)
+  @Scheduled(fixedDelayString = "${discodeit.security.jwt.cleanup-fixed-delay:PT5M}")
   @Override
   public void clearExpiredJwtInformation() {
     origin.forEach((userId, informationQueue) -> {
