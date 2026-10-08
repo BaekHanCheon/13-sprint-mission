@@ -17,7 +17,9 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import com.sprint.mission.discodeit.event.binarycontent.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.message.MessageCreatedEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import java.io.IOException;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
@@ -42,7 +44,7 @@ public class BasicMessageService implements MessageService {
   private final ChannelRepository channelRepository;
   private final UserRepository userRepository;
   private final BinaryContentRepository binaryContentRepository;
-  private final BinaryContentStorage binaryContentStorage;
+  private final ApplicationEventPublisher eventPublisher;
   private final MessageMapper messageMapper;
   private final PageResponseMapper pageResponseMapper;
 
@@ -77,6 +79,8 @@ public class BasicMessageService implements MessageService {
     }
 
     repository.save(message);
+    eventPublisher.publishEvent(new MessageCreatedEvent(
+        message.getId(), channel.getId(), user.getId(), user.getUsername(), message.getContent()));
     log.info("메시지 생성 - {}", message.getContent());
     return messageMapper.toDto(message);
   }
@@ -202,19 +206,19 @@ public class BasicMessageService implements MessageService {
     );
 
     BinaryContent savedBinaryContent = binaryContentRepository.save(binaryContent);
-    log.info("파일 업로드 시작: binaryContentId={}, messageId={}, size={}, contentType={}",
+    log.info("메타데이터 저장 및 이벤트 준비: binaryContentId={}, messageId={}, size={}, contentType={}",
         savedBinaryContent.getId(), message.getId(), size, contentType);
 
     try {
       byte[] bytes = file.getBytes();
-      binaryContentStorage.put(savedBinaryContent.getId(), bytes);
+      eventPublisher.publishEvent(new BinaryContentCreatedEvent(savedBinaryContent.getId(), bytes));
     } catch (IOException e) {
       throw new BinaryContentStorageException(savedFileName, e);
     }
 
-    log.info("파일 {} 저장됨", savedFileName);
+    log.info("파일 {} 메타데이터 저장됨", savedFileName);
 
-    log.info("파일 업로드 완료: binaryContentId={}, messageId={}",
+    log.info("파일 저장 이벤트 준비 완료: binaryContentId={}, messageId={}",
         savedBinaryContent.getId(), message.getId());
     return savedBinaryContent;
   }

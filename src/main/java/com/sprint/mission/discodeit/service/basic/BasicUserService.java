@@ -14,7 +14,9 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.security.JwtRegistry;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import com.sprint.mission.discodeit.event.binarycontent.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.user.RoleUpdatedEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +38,7 @@ public class BasicUserService implements UserService {
 
   private final UserRepository repository;
   private final BinaryContentRepository binaryContentRepository;
-  private final BinaryContentStorage binaryContentStorage;
+  private final ApplicationEventPublisher eventPublisher;
   private final UserMapper userMapper;
   private final PasswordEncoder passwordEncoder;
   private final JwtRegistry jwtRegistry;
@@ -59,6 +61,8 @@ public class BasicUserService implements UserService {
     String hashedPassword = passwordEncoder.encode(user.getPassword());
     user.updatePassword(hashedPassword);
 
+    BinaryContentCreatedEvent profileCreatedEvent = null;
+
     //프로필 생성
     if (profile != null && !profile.isEmpty()) {
       String savedFileName = profile.getOriginalFilename();
@@ -67,13 +71,13 @@ public class BasicUserService implements UserService {
 
       BinaryContent binaryContent = new BinaryContent(savedFileName, size, contentType, user, null);
       user.updateProfile(binaryContent);
-      log.info("프로필 파일 업로드 시작: binaryContentId={}, size={}, contentType={}",
+      log.info("프로필 메타데이터 저장 및 이벤트 준비: binaryContentId={}, size={}, contentType={}",
           binaryContent.getId(), size, contentType);
 
       try {
         byte[] bytes = profile.getBytes();
-        binaryContentStorage.put(binaryContent.getId(), bytes);
-        log.info("프로필 파일 업로드 완료: binaryContentId={}", binaryContent.getId());
+        profileCreatedEvent = new BinaryContentCreatedEvent(binaryContent.getId(), bytes);
+        log.info("프로필 파일 저장 이벤트 준비 완료: binaryContentId={}", binaryContent.getId());
       } catch (IOException e) {
         throw new BinaryContentStorageException(savedFileName, e);
       }
@@ -82,6 +86,9 @@ public class BasicUserService implements UserService {
     }
 
     repository.save(user);
+    if (profileCreatedEvent != null) {
+      eventPublisher.publishEvent(profileCreatedEvent);
+    }
     log.info("유저 생성 - {}", user.getUsername());
     return userMapper.toDto(user);
   }
@@ -140,13 +147,13 @@ public class BasicUserService implements UserService {
           userToUpdate, null);
       binaryContentRepository.save(binaryContent);
       userToUpdate.updateProfile(binaryContent);
-      log.info("프로필 파일 업로드 시작: binaryContentId={}, userId={}, size={}, contentType={}",
+      log.info("프로필 메타데이터 저장 및 이벤트 준비: binaryContentId={}, userId={}, size={}, contentType={}",
           binaryContent.getId(), userId, size, contentType);
 
       try {
         byte[] bytes = profile.getBytes();
-        binaryContentStorage.put(binaryContent.getId(), bytes);
-        log.info("프로필 파일 업로드 완료: binaryContentId={}, userId={}",
+        eventPublisher.publishEvent(new BinaryContentCreatedEvent(binaryContent.getId(), bytes));
+        log.info("프로필 파일 저장 이벤트 준비 완료: binaryContentId={}, userId={}",
             binaryContent.getId(), userId);
       } catch (IOException e) {
         throw new BinaryContentStorageException(savedFileName, e);
@@ -176,12 +183,18 @@ public class BasicUserService implements UserService {
   }
 
   @Override
+  @Transactional
   public UserResponse changeRole(UUID userId, Role role) {
 
     User user = getUserOrThrow(userId);
+    Role previousRole = user.getRole();
     user.updateRole(role);
     repository.save(user);
     jwtRegistry.invalidateJwtInformationByUserId(userId);
+    if (previousRole != role) {
+      eventPublisher.publishEvent(new RoleUpdatedEvent(
+          userId, previousRole, role));
+    }
 
     return userMapper.toDto(user);
   }
