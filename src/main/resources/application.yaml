@@ -1,4 +1,9 @@
 spring:
+  cache:
+    type: caffeine
+    cache-names: channelsByUser,notificationsByUser,users
+    caffeine:
+      spec: maximumSize=1000,expireAfterWrite=30s
   config:
     import: optional:file:.env[.properties]
   application:
@@ -66,6 +71,9 @@ server:
   port: 8080
 
 management:
+  observations:
+    annotations:
+      enabled: true
   endpoints:
     web:
       exposure:
