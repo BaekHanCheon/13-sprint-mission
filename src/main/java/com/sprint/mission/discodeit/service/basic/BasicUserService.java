@@ -22,6 +22,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -45,6 +47,7 @@ public class BasicUserService implements UserService {
 
   @Override
   @Transactional
+  @CacheEvict(cacheNames = {"users", "channelsByUser"}, allEntries = true)
   public UserResponse createUser(UserCreateRequest request, MultipartFile profile) {
     log.info("사용자 생성 시작: username={}, profileAttached={}",
         request.username(), profile != null && !profile.isEmpty());
@@ -103,6 +106,7 @@ public class BasicUserService implements UserService {
 
   @Override
   @Transactional(readOnly = true)
+  @Cacheable(cacheNames = "users")
   public List<UserResponse> findAllUser() {
     log.info("전체 유저 조회 : ");
 
@@ -112,6 +116,7 @@ public class BasicUserService implements UserService {
   @Override
   @Transactional
   @PreAuthorize("#userId == principal.userDto.id")
+  @CacheEvict(cacheNames = {"users", "channelsByUser"}, allEntries = true)
   public UserResponse updateUser(UUID userId, UserUpdateRequest request, MultipartFile profile) {
     log.info("사용자 수정 시작: userId={}, profileAttached={}",
         userId, profile != null && !profile.isEmpty());
@@ -171,6 +176,7 @@ public class BasicUserService implements UserService {
   @Override
   @Transactional
   @PreAuthorize("#userId == principal.userDto.id")
+  @CacheEvict(cacheNames = {"users", "channelsByUser"}, allEntries = true)
   public void deleteUser(UUID userId) {
     log.info("사용자 삭제 시작: userId={}", userId);
     User user = getUserOrThrow(userId);
@@ -184,6 +190,7 @@ public class BasicUserService implements UserService {
 
   @Override
   @Transactional
+  @CacheEvict(cacheNames = {"users", "channelsByUser"}, allEntries = true)
   public UserResponse changeRole(UUID userId, Role role) {
 
     User user = getUserOrThrow(userId);

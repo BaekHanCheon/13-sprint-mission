@@ -25,6 +25,8 @@ import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -60,6 +62,7 @@ public class BasicMessageService implements MessageService {
 
   @Override
   @Transactional
+  @CacheEvict(cacheNames = "channelsByUser", allEntries = true)
   public MessageResponse createMessage(MessageCreateRequest request,
       List<MultipartFile> attachments) {
     int attachmentCount = attachments == null ? 0 : attachments.size();
@@ -139,6 +142,7 @@ public class BasicMessageService implements MessageService {
   @Override
   @Transactional
   @PreAuthorize("@resourceOwnership.isMessageAuthor(#messageId, principal)")
+  @CacheEvict(cacheNames = "channelsByUser", allEntries = true)
   public void deleteMessage(UUID messageId) {
     log.info("메시지 삭제 시작: messageId={}", messageId);
     Message message = getMessageOrThrow(messageId);

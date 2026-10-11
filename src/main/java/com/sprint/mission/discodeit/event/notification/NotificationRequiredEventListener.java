@@ -12,12 +12,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionalEventListener;
 
-@Component
+// Kafka 알림 리스너를 사용하므로 @Component를 제외해 빈 등록을 비활성화한다.
 @RequiredArgsConstructor
 public class NotificationRequiredEventListener {
 

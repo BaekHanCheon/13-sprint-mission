@@ -8,6 +8,8 @@ import com.sprint.mission.discodeit.repository.NotificationRepository;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +19,7 @@ public class NotificationService {
   private final NotificationRepository repository;
 
   @Transactional(readOnly = true)
+  @Cacheable(cacheNames = "notificationsByUser", key = "#userId")
   public List<NotificationDto> findAll(UUID userId) {
     return repository.findAllByUserIdOrderByCreatedAtDesc(userId).stream()
         .map(notification -> new NotificationDto(notification.getId(),
@@ -26,6 +29,7 @@ public class NotificationService {
   }
 
   @Transactional
+  @CacheEvict(cacheNames = "notificationsByUser", key = "#userId")
   public void read(UUID notificationId, UUID userId) {
     Notification notification = repository.findById(notificationId)
         .orElseThrow(() -> new NotificationNotFoundException(notificationId));
