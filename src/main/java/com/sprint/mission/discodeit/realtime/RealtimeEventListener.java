@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.realtime;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sprint.mission.discodeit.sse.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -15,6 +16,7 @@ public class RealtimeEventListener {
   private final KafkaTemplate<String, String> kafka;
   private final ObjectMapper mapper;
   private final SimpMessagingTemplate websocket;
+  private final SseService sse;
 
   @TransactionalEventListener(fallbackExecution = true)
   public void publish(RealtimeEvent event) throws JsonProcessingException {
@@ -37,6 +39,9 @@ public class RealtimeEventListener {
     RealtimeEvent event = mapper.readValue(json, RealtimeEvent.class);
     if (event.destination() != null) {
       websocket.convertAndSend(event.destination(), event.data());
+    } else {
+      sse.accept(new SseMessage(event.id(), event.createdAt(), event.receiverIds(),
+          event.eventName(), event.data()));
     }
   }
 }
